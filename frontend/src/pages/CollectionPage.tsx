@@ -18,6 +18,7 @@ const CollectionPage = () => {
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+
   useEffect(() => {
     dispatch(fetchProductsByFilters({ collection, ...queryParams }));
   }, [dispatch, collection, searchParams]);
@@ -64,7 +65,7 @@ const CollectionPage = () => {
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <FilterSidebar />
+        <FilterSidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen ={setIsSidebarOpen}/>
       </div>
       {/* Overlay for mobile */}
       {isSidebarOpen && (
