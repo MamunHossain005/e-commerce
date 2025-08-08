@@ -5,7 +5,7 @@ const FilterSidebar = () => {
   // Simulating search params for demo purposes
   const [searchParams, setSearchParams] = useState(new URLSearchParams());
   const navigate = useNavigate();
-
+  
   type Filters = {
     category: string;
     gender: string;
@@ -16,7 +16,7 @@ const FilterSidebar = () => {
     minPrice: number;
     maxPrice: number;
   };
-
+  
   const [filters, setFilters] = useState<Filters>({
     category: "",
     gender: "",
@@ -27,8 +27,6 @@ const FilterSidebar = () => {
     minPrice: 0,
     maxPrice: 100,
   });
-
-  const [priceRange, setPriceRange] = useState([0, 100]);
   
   const categories = ["Top Wear", "Bottom Wear"];
   const colors = [
@@ -63,10 +61,9 @@ const FilterSidebar = () => {
     "ChicStyle",
   ];
   const genders = ["Men", "Women"];
-
+  
   useEffect(() => {
     const params = Object.fromEntries([...searchParams]);
-
     setFilters({
       category: params.category || "",
       gender: params.gender || "",
@@ -77,12 +74,8 @@ const FilterSidebar = () => {
       minPrice: params.minPrice ? Number(params.minPrice) : 0,
       maxPrice: params.maxPrice ? Number(params.maxPrice) : 100,
     });
-    setPriceRange([
-      params.minPrice ? Number(params.minPrice) : 0,
-      params.maxPrice ? Number(params.maxPrice) : 100
-    ]);
   }, [searchParams]);
-
+  
   // Handle input changes (radio buttons, checkboxes, range)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked, type } = e.target;
@@ -105,23 +98,20 @@ const FilterSidebar = () => {
     } else if (type === 'range') {
       // Handle price range
       const newPrice = Number(value);
-      setPriceRange([filters.minPrice, newPrice]);
       const newFilters = { ...filters, maxPrice: newPrice };
       setFilters(newFilters);
       updateSearchParams(newFilters);
     }
-
   };
-
+  
   // Handle button clicks (color selection)
   const handleButtonClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     const { name, value } = e.currentTarget;
-    console.log('Button clicked:', {name, value});
     const newFilters = { ...filters, [name]: value };
     setFilters(newFilters);
     updateSearchParams(newFilters);
   };
-
+  
   // Update URL search parameters
   const updateSearchParams = (newFilters: Filters) => {
     const params = new URLSearchParams();
@@ -137,24 +127,15 @@ const FilterSidebar = () => {
     });
     
     setSearchParams(params);
-    console.log('Updated params:', params.toString());
     
     // Navigate to update the URL with query parameters
     const queryString = params.toString();
     navigate(queryString ? `?${queryString}` : '', { replace: true });
   };
-
+  
   return (
-    <div className="p-4 bg-white max-h-screen overflow-y-auto">
+    <div className="p-4 bg-white min-h-screen overflow-y-auto">
       <h3 className="text-xl font-medium text-gray-800 mb-4">Filter</h3>
-      
-      {/* Current URL Display */}
-      {/* <div className="mb-4 p-2 bg-blue-50 rounded text-xs">
-        <h4 className="font-semibold mb-1 text-blue-800">Current URL:</h4>
-        <code className="text-blue-600 break-all">
-          {window.location.pathname}{searchParams.toString() ? `?${searchParams.toString()}` : ''}
-        </code>
-      </div> */}
       
       {/* Category Filter */}
       <div className="mb-6">
@@ -178,7 +159,7 @@ const FilterSidebar = () => {
           </div>
         ))}
       </div>
-
+      
       {/* Gender Filter */}
       <div className="mb-6">
         <label className="block text-gray-600 font-medium mb-2">
@@ -201,7 +182,7 @@ const FilterSidebar = () => {
           </div>
         ))}
       </div>
-
+      
       {/* Color Filter */}
       <div className="mb-6">
         <label className="block text-gray-600 font-medium mb-2">
@@ -226,7 +207,7 @@ const FilterSidebar = () => {
           <p className="text-sm text-gray-600 mt-2">Selected: {filters.color}</p>
         )}
       </div>
-
+      
       {/* Size Filter */}
       <div className="mb-6">
         <label className="block text-gray-600 font-medium mb-2">
@@ -249,7 +230,7 @@ const FilterSidebar = () => {
           </div>
         ))}
       </div>
-
+      
       {/* Material Filter */}
       <div className="mb-6">
         <label className="block text-gray-600 font-medium mb-2">
@@ -272,7 +253,7 @@ const FilterSidebar = () => {
           </div>
         ))}
       </div>
-
+      
       {/* Brand Filter */}
       <div className="mb-6">
         <label className="block text-gray-600 font-medium mb-2">
@@ -295,7 +276,7 @@ const FilterSidebar = () => {
           </div>
         ))}
       </div>
-
+      
       {/* Price Range Filter */}
       <div className="mb-6">
         <label className="block text-gray-600 font-medium mb-2">
@@ -315,7 +296,7 @@ const FilterSidebar = () => {
           <span>${filters.maxPrice}</span>
         </div>
       </div>
-
+      
       {/* Clear Filters Button */}
       <button
         onClick={() => {
@@ -330,7 +311,6 @@ const FilterSidebar = () => {
             maxPrice: 100,
           };
           setFilters(resetFilters);
-          setPriceRange([0, 100]);
           setSearchParams(new URLSearchParams());
           navigate('', { replace: true });
         }}
@@ -338,14 +318,6 @@ const FilterSidebar = () => {
       >
         Clear All Filters
       </button>
-
-      {/* Debug Info */}
-      {/* <div className="mt-4 p-2 bg-gray-100 rounded text-xs">
-        <h4 className="font-semibold mb-1">Current Filters:</h4>
-        <pre className="text-gray-600">
-          {JSON.stringify(filters, null, 2)}
-        </pre>
-      </div> */}
     </div>
   );
 };

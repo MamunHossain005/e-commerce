@@ -48,7 +48,7 @@ const CollectionPage = () => {
   }, []);
 
   return (
-    <div className="flex flex-col lg:flex-row">
+    <div className="flex flex-col lg:grid lg:grid-cols-5 ">
       {/* Mobile Filter button */}
       <button
         onClick={toggleSidebar}
@@ -73,7 +73,7 @@ const CollectionPage = () => {
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
-      <div className="flex-grow p-4">
+      <div className="col-span-4 p-4">
         <h2 className="text-2xl uppercase mb-4">All Collection</h2>
         {/* sort options */}
         <SortOptions />
