@@ -3,18 +3,19 @@ import { HiX } from "react-icons/hi";
 import { HiMagnifyingGlass } from "react-icons/hi2";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import type { AppDispatch } from "../../redux/store"; // Import your AppDispatch type
 import { fetchProductsByFilters, setFilters } from "../../redux/slices/productsSlice";
 
 const SearchBar = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>(); // Specify the AppDispatch type
   const navigate = useNavigate();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(setFilters({ search: searchTerm}));
-    dispatch(fetchProductsByFilters({ search: searchTerm}));
+    dispatch(setFilters({ search: searchTerm }));
+    dispatch(fetchProductsByFilters({ search: searchTerm }));
     navigate(`/collections/all?search=${searchTerm}`);
     setIsOpen(false); 
   };

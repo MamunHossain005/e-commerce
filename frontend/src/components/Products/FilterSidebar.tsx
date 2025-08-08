@@ -145,7 +145,7 @@ const FilterSidebar = () => {
   };
 
   return (
-    <div className="p-4 sm:w-56 bg-white max-h-screen overflow-y-auto">
+    <div className="p-4 bg-white max-h-screen overflow-y-auto">
       <h3 className="text-xl font-medium text-gray-800 mb-4">Filter</h3>
       
       {/* Current URL Display */}

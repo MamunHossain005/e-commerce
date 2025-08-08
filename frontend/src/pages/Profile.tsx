@@ -4,9 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { logout } from "../redux/slices/authSlice";
 import { clearCart } from "../redux/slices/cartSlice";
+import type { RootState } from "../redux/store";
 
 const Profile = () => {
-    const { user } = useSelector((state) => state.auth);
+    const { user } = useSelector((state : RootState) => state.auth);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 

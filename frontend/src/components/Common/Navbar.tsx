@@ -6,16 +6,22 @@ import CartDrawer from "../Layout/CartDrawer";
 import { useState } from "react";
 import { IoMdClose } from "react-icons/io";
 import { useSelector } from "react-redux";
+import type { RootState } from "../../redux/store"; // Make sure to import your RootState type
 
 const Navbar = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [navDrawerOpen, setNavDrawerOpen] = useState(false);
-  const { cart } = useSelector((state) => state.cart);
-  const { user } = useSelector((state) => state.auth);
 
-  const cartItemCount =
-    cart?.products?.reduce((total, product) => total + product.quantity, 0) ||
-    0;
+  // Properly typed state selectors
+  const cart = useSelector((state: RootState) => state.cart.cart);
+  const loading = useSelector((state: RootState) => state.cart.loading);
+  const error = useSelector((state: RootState) => state.cart.error);
+  const auth = useSelector((state: RootState) => state.auth);
+
+  const cartItemCount = cart.products.reduce(
+    (total, product) => total + product.quantity,
+    0
+  );
 
   const toggleCartDrawer = () => {
     setDrawerOpen(!drawerOpen);
@@ -24,6 +30,10 @@ const Navbar = () => {
   const toggleNavDrawer = () => {
     setNavDrawerOpen(!navDrawerOpen);
   };
+
+  if (loading) return <div>Loading cart...</div>;
+  if (error) return <div></div>;
+
   return (
     <>
       <nav className="container mx-auto flex items-center justify-between py-4 px-6">
@@ -62,7 +72,7 @@ const Navbar = () => {
         </div>
         {/* Right - Cart and User Profile */}
         <div className="flex items-center space-x-4">
-          {user && user.role === "admin" && (
+          {auth.user && auth.user.role === "admin" && (
             <Link
               to={"/admin"}
               className="block bg-black px-2 rounded text-sm text-white"
@@ -70,7 +80,6 @@ const Navbar = () => {
               Admin
             </Link>
           )}
-
           <Link to={"/profile"} className="hover:text-black">
             <HiOutlineUser className="h-6 w-6 text-gray-700" />
           </Link>
@@ -80,7 +89,7 @@ const Navbar = () => {
           >
             <HiOutlineShoppingBag className=" h-6 w-6 text-gray-700" />
             {cartItemCount > 0 && (
-              <span className="absolute -top-1 bg-eshop-red text-white text-xs rounded-full px-2 py-0.5">
+              <span className="absolute -top-1 -right-1 bg-eshop-red text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {cartItemCount}
               </span>
             )}
@@ -118,7 +127,6 @@ const Navbar = () => {
               onClick={toggleNavDrawer}
               className="block text-gray-600 hover:text-black"
             >
-              {" "}
               Men
             </Link>
             <Link
@@ -126,7 +134,6 @@ const Navbar = () => {
               onClick={toggleNavDrawer}
               className="block text-gray-600 hover:text-black"
             >
-              {" "}
               Women
             </Link>
             <Link
@@ -134,7 +141,6 @@ const Navbar = () => {
               onClick={toggleNavDrawer}
               className="block text-gray-600 hover:text-black"
             >
-              {" "}
               Top Wear
             </Link>
             <Link
@@ -142,7 +148,6 @@ const Navbar = () => {
               onClick={toggleNavDrawer}
               className="block text-gray-600 hover:text-black"
             >
-              {" "}
               Bottom Wear
             </Link>
           </nav>

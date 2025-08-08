@@ -1,7 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import UserLayout from "./components/Layout/UserLayout";
-import Home from "./pages/Home";
 import { Toaster } from "sonner";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -11,7 +10,7 @@ import ProductDetails from "./components/Products/ProductDetails";
 import Checkout from "./components/Cart/Checkout";
 import OrderConfirmationPage from "./pages/OrderConfirmationPage";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
-import MyOrdersPage from "./pages/MyOrdersPage";
+// import MyOrdersPage from "./pages/MyOrdersPage";
 import AdminLayout from "./components/Admin/AdminLayout";
 import AdminHomePage from "./pages/AdminHomePage";
 import UserManagement from "./components/Admin/UserManagement";
@@ -19,16 +18,15 @@ import ProductManagement from "./components/Admin/ProductManagement";
 import EditProductPage from "./components/Admin/EditProductPage";
 import OrderManagement from "./components/Admin/OrderManagement";
 
-// Import Payment Pages
-import PaymentSuccessPage from "./pages/PaymentSuccessPage";
-import PaymentFailPage from "./pages/PaymentFailPage";
-import PaymentCancelPage from "./pages/PaymentCancelPage";
-
 import { Provider } from "react-redux";
 import store from "./redux/store";
 import ProtectedRoute from "./components/Common/ProtectedRoute";
 import AddProductPage from "./components/Admin/AddProductPage";
 import AdminAnalyticsPage from "./pages/AdminAnalyticsPage";
+import PaymentSuccessPage from "./pages/PaymentSuccessPage";
+import PaymentCancelPage from "./pages/PaymentCancelPage";
+import PaymentFailPage from "./pages/PaymentFailPage";
+import Home from "./pages/Home";
 
 const App = () => {
   return (
@@ -53,7 +51,7 @@ const App = () => {
               element={<OrderConfirmationPage />}
             />
             <Route path="order/:id" element={<OrderDetailsPage />} />
-            <Route path="my-orders" element={<MyOrdersPage />} />
+            {/* <Route path="my-orders" element={<MyOrdersPage />} /> */}
             
             {/* Payment Routes */}
             <Route path="payment/success" element={<PaymentSuccessPage />} />

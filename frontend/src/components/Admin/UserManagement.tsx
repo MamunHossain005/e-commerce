@@ -21,6 +21,9 @@ interface FormData {
 }
 
 interface RootState {
+  auth: {
+    user: User | null;
+  };
   admin: {
     users: User[];
     loading: boolean;
@@ -28,12 +31,10 @@ interface RootState {
   };
 }
 
-
-
 const UserManagement = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { user } = useSelector((state ) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
   const { users, loading, error } = useSelector((state: RootState) => state.admin);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 

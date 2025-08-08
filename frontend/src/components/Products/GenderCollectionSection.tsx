@@ -1,12 +1,12 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import mensCollectionImg from "../../assets/mens-collection.webp";
 import womenCollectionImg from "../../assets/womens-collection.webp";
+import type { Variants } from "framer-motion";
 
 const GenderCollectionSection = () => {
   // Container animation variants
-  const containerVariants = {
+  const containerVariants : Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -18,7 +18,7 @@ const GenderCollectionSection = () => {
   };
 
   // Individual collection card variants
-  const cardVariants = {
+  const cardVariants : Variants = {
     hidden: { 
       opacity: 0, 
       y: 60,
@@ -36,7 +36,7 @@ const GenderCollectionSection = () => {
   };
 
   // Image hover variants
-  const imageVariants = {
+  const imageVariants : Variants = {
     initial: { 
       scale: 1 
     },
@@ -50,7 +50,7 @@ const GenderCollectionSection = () => {
   };
 
   // Content overlay variants
-  const overlayVariants = {
+  const overlayVariants : Variants = {
     initial: { 
       opacity: 0.8,
       y: 0
@@ -66,7 +66,7 @@ const GenderCollectionSection = () => {
   };
 
   // Link variants
-  const linkVariants = {
+  const linkVariants : Variants = {
     initial: { 
       x: 0 
     },

@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import heroImg from "../../assets/rabbit-hero.webp";
+import type { Variants } from "framer-motion";
 
 const Hero = () => {
   // Animation variants
-  const containerVariants = {
+  const containerVariants :  Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -15,7 +16,7 @@ const Hero = () => {
     }
   };
 
-  const itemVariants = {
+  const itemVariants : Variants = {
     hidden: { 
       opacity: 0, 
       y: 30,
@@ -27,12 +28,12 @@ const Hero = () => {
       scale: 1,
       transition: {
         duration: 0.8,
-        ease: "easeOut"
+        ease: "easeInOut"
       }
     }
   };
 
-  const imageVariants = {
+  const imageVariants : Variants = {
     hidden: { 
       scale: 1.1,
       opacity: 0
@@ -42,12 +43,12 @@ const Hero = () => {
       opacity: 1,
       transition: {
         duration: 1.2,
-        ease: "easeOut"
+        ease: "easeInOut"
       }
     }
   };
 
-  const buttonVariants = {
+  const buttonVariants : Variants = {
     idle: { 
       scale: 1,
       boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)"

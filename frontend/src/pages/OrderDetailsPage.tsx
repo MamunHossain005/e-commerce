@@ -4,18 +4,25 @@ import { useNavigate, useParams } from "react-router-dom";
 import { fetchOrderDetails } from "../redux/slices/orderSlice";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import type { RootState } from "../redux/store";
+import type { AppDispatch } from "../redux/store";
+
 
 const OrderDetailsPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // Get order ID from URL
-  const dispatch = useDispatch();
-  const { orderDetails, loading, error } = useSelector((state) => state.orders);
+  const { id } = useParams<{id: string }>(); // Get order ID from URL
+  const dispatch = useDispatch<AppDispatch>();
+  const { orderDetails, loading, error } = useSelector(
+    (state: RootState) => state.orders
+  );
   const [isGeneratingInvoice, setIsGeneratingInvoice] = useState(false);
   const [isCancellingOrder, setIsCancellingOrder] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
-  const [cancelReason, setCancelReason] = useState('Customer requested cancellation');
-  const [cancelError, setCancelError] = useState(null);
-  const invoiceRef = useRef(null);
+  const [cancelReason, setCancelReason] = useState(
+    "Customer requested cancellation"
+  );
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const invoiceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (id) {
@@ -25,19 +32,15 @@ const OrderDetailsPage = () => {
 
   const handleDownloadInvoice = async () => {
     if (!orderDetails || !invoiceRef.current) return;
-
     setIsGeneratingInvoice(true);
-
     try {
       // Ensure the invoice is visible for capture (but off-screen)
       const input = invoiceRef.current;
       input.style.position = "absolute";
       input.style.left = "-9999px";
       input.style.display = "block";
-
       // Wait for any potential rendering
       await new Promise((resolve) => setTimeout(resolve, 300));
-
       // Load all images
       const images = input.getElementsByTagName("img");
       await Promise.all(
@@ -49,7 +52,6 @@ const OrderDetailsPage = () => {
           });
         })
       );
-
       const canvas = await html2canvas(input, {
         scale: 2,
         useCORS: true,
@@ -57,17 +59,16 @@ const OrderDetailsPage = () => {
         logging: true,
         backgroundColor: "#ffffff",
       });
-
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = pdf.internal.pageSize.getWidth();
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
       pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
       pdf.save(`invoice_${orderDetails._id}.pdf`);
     } catch (error) {
       console.error("Error generating invoice:", error);
-      alert("Failed to generate invoice. Please try again.");
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate invoice. Please try again.";
+      alert(errorMessage);
     } finally {
       const input = invoiceRef.current;
       if (input) {
@@ -84,38 +85,35 @@ const OrderDetailsPage = () => {
       setCancelError("Cannot cancel order: Transaction ID not found");
       return;
     }
-
     setIsCancellingOrder(true);
     setCancelError(null);
-
     try {
-      const token = localStorage.getItem('userToken');
+      const token = localStorage.getItem("userToken");
       if (!token) {
         throw new Error("Authentication required. Please log in again.");
       }
-
       const response = await fetch(
-        `${import.meta.env.VITE_BACKEND_URL}/api/checkout/sslcommerz/cancel/${orderDetails.paymentDetails.transactionId}`, 
+        `${import.meta.env.VITE_BACKEND_URL}/api/checkout/sslcommerz/cancel/${
+          orderDetails.paymentDetails.transactionId
+        }`,
         {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
             orderId: orderDetails._id,
-            reason: cancelReason || 'Customer requested cancellation'
-          })
+            reason: cancelReason || "Customer requested cancellation",
+          }),
         }
       );
-
       // Check if the response is a redirect (3xx status codes)
       if (response.redirected) {
         // Follow the redirect
         window.location.href = response.url;
         return;
       }
-
       if (response.ok) {
         // Try to parse JSON response
         let result;
@@ -125,20 +123,21 @@ const OrderDetailsPage = () => {
           // If JSON parsing fails, assume it's a redirect response
           result = { success: true };
         }
-
         if (result.success !== false) {
           // Show success message
-          alert("Order cancellation initiated successfully. You will be redirected to the cancellation page.");
-          
+          alert(
+            "Order cancellation initiated successfully. You will be redirected to the cancellation page."
+          );
           // Redirect to cancel page with transaction ID
-          navigate(`/payment/cancel?transaction=${orderDetails.paymentDetails.transactionId}&order=${orderDetails._id}`);
+          navigate(
+            `/payment/cancel?transaction=${orderDetails.paymentDetails.transactionId}&order=${orderDetails._id}`
+          );
         } else {
-          throw new Error(result.message || 'Failed to cancel order');
+          throw new Error(result.message || "Failed to cancel order");
         }
       } else {
         // Handle HTTP error responses
-        let errorMessage = 'Failed to cancel order';
-        
+        let errorMessage = "Failed to cancel order";
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
@@ -146,12 +145,14 @@ const OrderDetailsPage = () => {
           // If JSON parsing fails, use status text
           errorMessage = response.statusText || errorMessage;
         }
-        
         throw new Error(errorMessage);
       }
     } catch (error) {
       console.error("Error cancelling order:", error);
-      setCancelError(`Failed to cancel order: ${error.message}. Please contact customer support.`);
+      const errorMessage = error instanceof Error ? error.message : "Failed to cancel order";
+      setCancelError(
+        `${errorMessage}. Please contact customer support.`
+      );
     } finally {
       setIsCancellingOrder(false);
     }
@@ -159,51 +160,49 @@ const OrderDetailsPage = () => {
 
   const canCancelOrder = () => {
     if (!orderDetails) return false;
-    
     // Order can be cancelled if:
     // 1. It's not delivered yet
     // 2. It was paid (has transaction ID)
     // 3. Payment status is not already "Cancelled" or "Failed"
     // 4. Order status is not already "Cancel"
     // 5. Order is not too old (optional - you might want to add time limits)
-    
     const isNotDelivered = !orderDetails.isDelivered;
-    const isPaidOrder = orderDetails.isPaid && orderDetails.paymentDetails?.transactionId;
-    const isNotAlreadyCancelled = 
-      orderDetails.paymentStatus !== 'Cancelled' && 
-      orderDetails.paymentStatus !== 'Failed' &&
-      orderDetails.status !== 'Cancel';
-    
+    const isPaidOrder =
+      orderDetails.isPaid && orderDetails.paymentDetails?.transactionId;
+    const isNotAlreadyCancelled =
+      orderDetails.paymentStatus !== "Cancelled" &&
+      orderDetails.paymentStatus !== "Failed" &&
+      orderDetails.status !== "Cancel";
     // Optional: Check if order is within cancellation window (e.g., 24 hours)
     const orderDate = new Date(orderDetails.createdAt);
     const currentDate = new Date();
-    const hoursDifference = (currentDate - orderDate) / (1000 * 60 * 60);
+    const hoursDifference = (currentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
     const withinCancellationWindow = hoursDifference <= 24; // 24 hours window
-    
-    return isNotDelivered && isPaidOrder && isNotAlreadyCancelled && withinCancellationWindow;
+    return (
+      isNotDelivered &&
+      isPaidOrder &&
+      isNotAlreadyCancelled &&
+      withinCancellationWindow
+    );
   };
 
   const getCancellationTimeRemaining = () => {
     if (!orderDetails) return null;
-    
     const orderDate = new Date(orderDetails.createdAt);
     const currentDate = new Date();
-    const hoursDifference = (currentDate - orderDate) / (1000 * 60 * 60);
+    const hoursDifference = (currentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
     const hoursRemaining = Math.max(0, 24 - hoursDifference);
-    
     if (hoursRemaining === 0) return null;
-    
     if (hoursRemaining < 1) {
       return `${Math.floor(hoursRemaining * 60)} minutes`;
     }
-    
     return `${Math.floor(hoursRemaining)} hours`;
   };
 
   const handleCloseModal = () => {
     setShowCancelConfirm(false);
     setCancelError(null);
-    setCancelReason('Customer requested cancellation');
+    setCancelReason("Customer requested cancellation");
   };
 
   if (loading) return <p>Loading....</p>;
@@ -212,14 +211,14 @@ const OrderDetailsPage = () => {
 
   const calculateSubtotal = () => {
     return (
-      orderDetails?.orderItems.reduce(
+      orderDetails.orderItems.reduce(
         (total, item) => total + item.price * item.quantity,
         0
       ) || 0
     );
   };
 
-  const calculateTax = (subtotal) => {
+  const calculateTax = (subtotal: number) => {
     return subtotal * 0.1; // 10% tax
   };
 
@@ -241,7 +240,7 @@ const OrderDetailsPage = () => {
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl md:text-3xl font-bold">Order Details</h2>
         <button
-          onClick={() => navigate("/my-orders")}
+          onClick={() => navigate("/profile")}
           className="flex items-center space-x-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors"
         >
           <svg
@@ -260,7 +259,6 @@ const OrderDetailsPage = () => {
           <span>Back to My Orders</span>
         </button>
       </div>
-
       <div className="space-y-6">
         <div>
           <h4 className="text-sm font-medium text-gray-500">Customer Info</h4>
@@ -289,7 +287,6 @@ const OrderDetailsPage = () => {
             <p className="text-lg">{orderDetails.orderNotes}</p>
           </div>
         )}
-        
         {/* Order Header */}
         <div className="p-4 sm:p-6 rounded-lg border bg-gray-50">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -314,7 +311,8 @@ const OrderDetailsPage = () => {
                     : "bg-red-100 text-red-800"
                 }`}
               >
-                {orderDetails.paymentStatus || (orderDetails.isPaid ? "Paid" : "Unpaid")}
+                {orderDetails.paymentStatus ||
+                  (orderDetails.isPaid ? "Paid" : "Unpaid")}
               </span>
             </div>
             <div>
@@ -333,7 +331,6 @@ const OrderDetailsPage = () => {
             </div>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Order Items */}
           <div className="lg:col-span-2">
@@ -367,7 +364,6 @@ const OrderDetailsPage = () => {
               </div>
             </div>
           </div>
-
           {/* Order Summary & Info */}
           <div className="space-y-6">
             {/* Payment & Shipping Info */}
@@ -427,7 +423,6 @@ const OrderDetailsPage = () => {
                 )}
               </div>
             </div>
-
             {/* Order Summary */}
             <div className="p-4 sm:p-6 rounded-lg border bg-gray-50">
               <h3 className="text-xl font-semibold mb-4">Order Summary</h3>
@@ -451,7 +446,6 @@ const OrderDetailsPage = () => {
                 </div>
               </div>
             </div>
-
             {/* Hidden invoice */}
             <div ref={invoiceRef} className="hidden">
               <div className="p-8 bg-white" style={{ width: "210mm" }}>
@@ -479,13 +473,11 @@ const OrderDetailsPage = () => {
                     <p className="text-gray-600">contact@ecommerce.com</p>
                   </div>
                 </div>
-
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold mb-2">Bill To:</h3>
                   <p>{orderDetails?.customerInfo?.email}</p>
                   <p>{orderDetails?.customerInfo?.phone}</p>
                 </div>
-
                 <div className="mb-8">
                   <h3 className="text-lg font-semibold mb-2">Ship To:</h3>
                   <p>
@@ -499,7 +491,6 @@ const OrderDetailsPage = () => {
                   </p>
                   <p>{orderDetails?.shippingAddress?.country}</p>
                 </div>
-
                 {orderDetails.paymentDetails?.transactionId && (
                   <div className="mb-8">
                     <h3 className="text-lg font-semibold mb-2">
@@ -507,7 +498,7 @@ const OrderDetailsPage = () => {
                     </h3>
                     <p>
                       <span className="font-medium">Transaction Date:</span>{" "}
-                      {new Date(orderDetails.paidAt).toLocaleString()}
+                      {new Date(orderDetails.paidAt || Date.now()).toLocaleString()}
                     </p>
                     <p>
                       <span className="font-medium">Status:</span>{" "}
@@ -519,7 +510,6 @@ const OrderDetailsPage = () => {
                     </p>
                   </div>
                 )}
-
                 <table className="w-full mb-8 border-collapse">
                   <thead>
                     <tr className="bg-gray-100">
@@ -542,7 +532,6 @@ const OrderDetailsPage = () => {
                     ))}
                   </tbody>
                 </table>
-
                 <div className="flex justify-end mb-8">
                   <div className="w-1/3">
                     <div className="flex justify-between mb-2">
@@ -565,7 +554,6 @@ const OrderDetailsPage = () => {
                     </div>
                   </div>
                 </div>
-
                 <div className="text-center text-gray-500 text-sm">
                   <p>Thank you for your business!</p>
                   <p>Payment Method: {orderDetails?.paymentMethod}</p>
@@ -575,7 +563,6 @@ const OrderDetailsPage = () => {
                 </div>
               </div>
             </div>
-
             {/* Action Buttons */}
             <div className="space-y-3">
               <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
@@ -621,7 +608,7 @@ const OrderDetailsPage = () => {
                       Cancellation available for {timeRemaining}
                     </p>
                   )}
-                  <button 
+                  <button
                     onClick={() => setShowCancelConfirm(true)}
                     className="w-full border border-red-300 text-red-700 py-2 px-4 rounded-lg hover:bg-red-50 transition-colors"
                   >
@@ -633,33 +620,33 @@ const OrderDetailsPage = () => {
           </div>
         </div>
       </div>
-
       {/* Enhanced Cancel Confirmation Modal */}
       {showCancelConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md mx-4 max-h-[80vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">Cancel Order</h3>
-            
             {cancelError && (
               <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
                 {cancelError}
               </div>
             )}
-
             <div className="space-y-4">
               <p className="text-gray-600">
-                Are you sure you want to cancel this order? This action cannot be undone.
-                {orderDetails.isPaid && " Your payment will be refunded according to our refund policy."}
+                Are you sure you want to cancel this order? This action cannot
+                be undone.
+                {orderDetails.isPaid &&
+                  " Your payment will be refunded according to our refund policy."}
               </p>
-
               {timeRemaining && (
                 <p className="text-sm text-orange-600">
                   You have {timeRemaining} remaining to cancel this order.
                 </p>
               )}
-
               <div>
-                <label htmlFor="cancelReason" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="cancelReason"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Reason for cancellation (optional):
                 </label>
                 <select
@@ -669,25 +656,32 @@ const OrderDetailsPage = () => {
                   className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-red-500 focus:border-red-500"
                   disabled={isCancellingOrder}
                 >
-                  <option value="Customer requested cancellation">Customer requested cancellation</option>
+                  <option value="Customer requested cancellation">
+                    Customer requested cancellation
+                  </option>
                   <option value="Changed my mind">Changed my mind</option>
-                  <option value="Found a better price">Found a better price</option>
+                  <option value="Found a better price">
+                    Found a better price
+                  </option>
                   <option value="Ordered by mistake">Ordered by mistake</option>
                   <option value="No longer needed">No longer needed</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
-
               <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                <h4 className="text-sm font-medium text-yellow-800 mb-1">Important:</h4>
+                <h4 className="text-sm font-medium text-yellow-800 mb-1">
+                  Important:
+                </h4>
                 <ul className="text-sm text-yellow-700 space-y-1">
                   <li>• Refund processing may take 3-5 business days</li>
-                  <li>• You'll receive a confirmation email once cancellation is complete</li>
+                  <li>
+                    • You'll receive a confirmation email once cancellation is
+                    complete
+                  </li>
                   <li>• Orders already shipped cannot be cancelled</li>
                 </ul>
               </div>
             </div>
-
             <div className="flex space-x-4 mt-6">
               <button
                 onClick={handleCloseModal}

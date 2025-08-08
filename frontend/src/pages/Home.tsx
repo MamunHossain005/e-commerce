@@ -9,11 +9,17 @@ import ProductGrid from "../components/Products/ProductGrid"
 import { useEffect, useState } from "react"
 import { fetchProductsByFilters } from "../redux/slices/productsSlice"
 import axios from "axios"
+import type { RootState } from "../redux/store";
+import type { AppDispatch } from "../redux/store";
+
+interface Product {
+  _id: string;
+}
 
 const Home = () => {
-  const dispatch = useDispatch();
-  const { products, loading, error } = useSelector((state) => state.products);
-  const [ bestSellerProduct, setBestSellerProduct] = useState(null);
+  const dispatch = useDispatch<AppDispatch>();
+  const { products, loading, error } = useSelector((state : RootState) => state.products);
+  const [ bestSellerProduct, setBestSellerProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     // Fetch products for a specific collection
@@ -21,7 +27,7 @@ const Home = () => {
       fetchProductsByFilters({
         gender: "Women",
         category: "Bottom Wear",
-        limit: 8,
+        limit: "8",
       })
     );
 

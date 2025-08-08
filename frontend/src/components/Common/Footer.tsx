@@ -1,50 +1,51 @@
 import { motion } from "framer-motion";
+import type { Variants } from "framer-motion";
 import {
   FaFacebook,
   FaInstagram,
   FaLinkedin,
 } from "react-icons/fa";
 import { FiPhoneCall } from "react-icons/fi";
-import { RiTwitterXLine } from "react-icons/ri";
+import { RiTwitterXLine } from 'react-icons/ri';
 import { Link } from "react-router-dom";
 
 const Footer = () => {
   // Animation variants for the footer container
-  const footerVariants = {
+  const footerVariants: Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
+        ease: [0.04, 0.62, 0.23, 0.98], // Custom cubic bezier for easeOut
         staggerChildren: 0.1,
       },
     },
   };
 
   // Animation variants for each section
-  const sectionVariants = {
+  const sectionVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
+        ease: [0.04, 0.62, 0.23, 0.98], // Custom cubic bezier for easeOut
       },
     },
   };
 
   // Animation variants for links
-  const linkVariants = {
+  const linkVariants: Variants = {
     hidden: { opacity: 0, x: -10 },
     visible: {
       opacity: 1,
       x: 0,
       transition: {
         duration: 0.3,
-        ease: "easeOut",
+        ease: [0.04, 0.62, 0.23, 0.98], // Custom cubic bezier for easeOut
       },
     },
     hover: {
@@ -52,20 +53,20 @@ const Footer = () => {
       color: "#000",
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: [0.25, 0.46, 0.45, 0.94], // Custom cubic bezier for easeInOut
       },
     },
   };
 
   // Animation variants for social icons
-  const socialIconVariants = {
+  const socialIconVariants: Variants = {
     hidden: { opacity: 0, scale: 0.8 },
     visible: {
       opacity: 1,
       scale: 1,
       transition: {
         duration: 0.4,
-        ease: "easeOut",
+        ease: [0.04, 0.62, 0.23, 0.98], // Custom cubic bezier for easeOut
         type: "spring",
         stiffness: 200,
       },
@@ -76,13 +77,13 @@ const Footer = () => {
       transition: {
         duration: 0.5,
         repeat: Infinity,
-        repeatType: "loop",
+        repeatType: "loop" as const,
       },
     },
   };
 
   // Animation variants for form elements
-  const formVariants = {
+  const formVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -94,7 +95,7 @@ const Footer = () => {
   };
 
   // Animation variants for copyright section
-  const copyrightVariants = {
+  const copyrightVariants: Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,

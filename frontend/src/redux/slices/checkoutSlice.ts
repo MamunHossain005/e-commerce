@@ -367,7 +367,7 @@ const checkoutSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(initializeSSLCommerzPayment.fulfilled, (state, action) => {
+      .addCase(initializeSSLCommerzPayment.fulfilled, (state) => {
         state.loading = false;
         state.error = null;
         // SSLCommerz initialization successful, payment URL will be used to redirect

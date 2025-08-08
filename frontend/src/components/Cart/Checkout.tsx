@@ -1,15 +1,11 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { 
-  createCheckout, 
-  updatePaymentStatus, 
-  finalizeCheckout,
+import {
+  createCheckout,
   clearCheckout,
-  clearCheckoutError 
+  clearCheckoutError,
 } from "../../redux/slices/checkoutSlice";
-import { clearCart } from "../../redux/slices/cartSlice";
-import axios from "axios";
 
 type InputOrSelectChangeEvent = React.ChangeEvent<
   HTMLInputElement | HTMLSelectElement
@@ -40,14 +36,16 @@ interface RootState {
 const Checkout = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { cart, loading: cartLoading, error: cartError } = useSelector(
-    (state: RootState) => state.cart
-  );
+  const {
+    cart,
+    loading: cartLoading,
+    error: cartError,
+  } = useSelector((state: RootState) => state.cart);
   const { user } = useSelector((state: RootState) => state.auth);
-  const { 
-    checkout, 
-    loading: checkoutLoading, 
-    error: checkoutError 
+  const {
+    checkout,
+    loading: checkoutLoading,
+    error: checkoutError,
   } = useSelector((state: RootState) => state.checkout);
 
   const [contactInfo, setContactInfo] = useState({
@@ -79,6 +77,12 @@ const Checkout = () => {
   const handlePaymentChange = (e: InputOrSelectChangeEvent) => {
     setPaymentInfo({ ...paymentInfo, [e.target.name]: e.target.value });
   };
+
+  function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === "string") return error;
+    return "An unknown error occurred";
+  }
 
   const shippingCost = 15;
   const tax = Math.round(cart.totalPrice * 0.08);
@@ -135,24 +139,25 @@ const Checkout = () => {
     }
 
     setSslcommerzLoading(true);
-    
+
     try {
       const token = localStorage.getItem("userToken");
-      
+
       if (!token) {
         throw new Error("Please login to continue");
       }
 
       // Convert amount to BDT (assuming 1 USD = 85 BDT)
       const amountInBDT = Math.round(finalTotal * 85);
-      
+
       const paymentData = {
         checkoutId: checkout._id,
         total_amount: amountInBDT,
         currency: "BDT",
         tran_id: `TXN_${checkout._id}_${Date.now()}`,
         emi_option: 0,
-        cus_name: `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
+        cus_name:
+          `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
         cus_email: contactInfo.email,
         cus_phone: contactInfo.phone,
         cus_add1: shippingAddress.address,
@@ -165,49 +170,57 @@ const Checkout = () => {
         product_profile: "general",
       };
 
-      console.log('Initiating SSLCommerz payment with data:', paymentData);
+      console.log("Initiating SSLCommerz payment with data:", paymentData);
 
-      const response = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/checkout/sslcommerz/init`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(paymentData),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_BACKEND_URL}/api/checkout/sslcommerz/init`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(paymentData),
+        }
+      );
 
       console.log(response);
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('SSLCommerz API Error Response:', errorText);
+        console.error("SSLCommerz API Error Response:", errorText);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
       const result = await response.json();
-      console.log('SSLCommerz API Response:', result);
-      
-      if (result.status === 'SUCCESS' && result.GatewayPageURL) {
-        console.log('Redirecting to payment gateway:', result.GatewayPageURL);
+      console.log("SSLCommerz API Response:", result);
+
+      if (result.status === "SUCCESS" && result.GatewayPageURL) {
+        console.log("Redirecting to payment gateway:", result.GatewayPageURL);
         // Redirect to SSLCommerz payment page
-        window.location.replace(result.GatewayPageURL) ;
+        window.location.replace(result.GatewayPageURL);
       } else {
-        throw new Error(result.message || result.failedreason || 'Failed to initialize payment gateway');
+        throw new Error(
+          result.message ||
+            result.failedreason ||
+            "Failed to initialize payment gateway"
+        );
       }
     } catch (error) {
-      console.error('SSLCommerz payment error:', error);
-      
-      let errorMessage = 'Failed to initialize payment. ';
-      if (error.message.includes('fetch')) {
-        errorMessage += 'Please check your internet connection and try again.';
-      } else if (error.message.includes('HTTP 500')) {
-        errorMessage += 'Server error. Please try again later.';
-      } else if (error.message.includes('HTTP 400')) {
-        errorMessage += 'Invalid payment data. Please check your information.';
+      console.error("SSLCommerz payment error:", error);
+      const message = getErrorMessage(error);
+
+      let errorMessage = "Failed to initialize payment. ";
+      if (message.includes("fetch")) {
+        errorMessage += "Please check your internet connection and try again.";
+      } else if (message.includes("HTTP 500")) {
+        errorMessage += "Server error. Please try again later.";
+      } else if (message.includes("HTTP 400")) {
+        errorMessage += "Invalid payment data. Please check your information.";
       } else {
-        errorMessage += error.message || 'Please try again.';
+        errorMessage += message || "Please try again.";
       }
-      
+
       alert(errorMessage);
     } finally {
       setSslcommerzLoading(false);
@@ -216,7 +229,7 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!user) {
       alert("Please log in to continue with checkout");
       navigate("/login");
@@ -225,18 +238,29 @@ const Checkout = () => {
 
     if (cart && cart.products.length > 0) {
       // Validate required fields
-      const requiredShippingFields = ['firstName', 'lastName', 'address', 'city', 'postalCode', 'country'];
+      const requiredShippingFields = [
+        "firstName",
+        "lastName",
+        "address",
+        "city",
+        "postalCode",
+        "country",
+      ];
       const missingFields = requiredShippingFields.filter(
-        field => !shippingAddress[field as keyof typeof shippingAddress]
+        (field) => !shippingAddress[field as keyof typeof shippingAddress]
       );
 
       if (missingFields.length > 0) {
-        alert(`Please fill in all required shipping fields: ${missingFields.join(', ')}`);
+        alert(
+          `Please fill in all required shipping fields: ${missingFields.join(
+            ", "
+          )}`
+        );
         return;
       }
 
       if (!contactInfo.phone) {
-        alert('Phone number is required for payment processing');
+        alert("Phone number is required for payment processing");
         return;
       }
 
@@ -257,12 +281,11 @@ const Checkout = () => {
 
       try {
         const result = await dispatch(createCheckout(checkoutData) as any);
-        
-        if (result.type === 'checkout/createCheckout/fulfilled') {
+
+        if (result.type === "checkout/createCheckout/fulfilled") {
           console.log("Checkout created successfully:", result.payload);
           // Don't automatically initiate payment - wait for user to click pay button
-          
-        } else if (result.type === 'checkout/createCheckout/rejected') {
+        } else if (result.type === "checkout/createCheckout/rejected") {
           console.error("Checkout creation failed:", result.payload);
           alert("Failed to create checkout. Please try again.");
         }
@@ -565,8 +588,18 @@ const Checkout = () => {
                   ) : (
                     <>
                       <span>Pay with SSLCommerz</span>
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
                       </svg>
                     </>
                   )}
@@ -608,8 +641,15 @@ const Checkout = () => {
                 <p className="text-sm text-gray-600">Qty: {product.quantity}</p>
               </div>
               <div className="text-right">
-                <p className="font-semibold">${(parseFloat(product.price) * product.quantity).toFixed(2)}</p>
-                <p className="text-sm text-gray-600">৳{((parseFloat(product.price) * product.quantity) * 85).toFixed(0)}</p>
+                <p className="font-semibold">
+                  ${(parseFloat(product.price) * product.quantity).toFixed(2)}
+                </p>
+                <p className="text-sm text-gray-600">
+                  ৳
+                  {(parseFloat(product.price) * product.quantity * 85).toFixed(
+                    0
+                  )}
+                </p>
               </div>
             </div>
           ))}
@@ -621,14 +661,18 @@ const Checkout = () => {
             <span>Subtotal</span>
             <div className="text-right">
               <span>${cart.totalPrice.toFixed(2)}</span>
-              <p className="text-sm text-gray-600">৳{(cart.totalPrice * 85).toFixed(0)}</p>
+              <p className="text-sm text-gray-600">
+                ৳{(cart.totalPrice * 85).toFixed(0)}
+              </p>
             </div>
           </div>
           <div className="flex justify-between">
             <span>Shipping</span>
             <div className="text-right">
               <span>${shippingCost.toFixed(2)}</span>
-              <p className="text-sm text-gray-600">৳{(shippingCost * 85).toFixed(0)}</p>
+              <p className="text-sm text-gray-600">
+                ৳{(shippingCost * 85).toFixed(0)}
+              </p>
             </div>
           </div>
           <div className="flex justify-between">
@@ -642,21 +686,37 @@ const Checkout = () => {
             <span>Total</span>
             <div className="text-right">
               <span>${finalTotal.toFixed(2)}</span>
-              <p className="text-sm font-normal text-gray-600">৳{(finalTotal * 85).toFixed(0)} BDT</p>
+              <p className="text-sm font-normal text-gray-600">
+                ৳{(finalTotal * 85).toFixed(0)} BDT
+              </p>
             </div>
           </div>
         </div>
 
         {/* Payment Methods Available */}
         <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-          <h4 className="font-semibold mb-3 text-blue-800">Available Payment Methods</h4>
+          <h4 className="font-semibold mb-3 text-blue-800">
+            Available Payment Methods
+          </h4>
           <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="bg-white p-2 rounded text-xs font-semibold text-pink-600">bKash</div>
-            <div className="bg-white p-2 rounded text-xs font-semibold text-orange-600">Nagad</div>
-            <div className="bg-white p-2 rounded text-xs font-semibold text-purple-600">Rocket</div>
-            <div className="bg-white p-2 rounded text-xs font-semibold text-blue-600">Visa</div>
-            <div className="bg-white p-2 rounded text-xs font-semibold text-red-600">MasterCard</div>
-            <div className="bg-white p-2 rounded text-xs font-semibold text-green-600">AMEX</div>
+            <div className="bg-white p-2 rounded text-xs font-semibold text-pink-600">
+              bKash
+            </div>
+            <div className="bg-white p-2 rounded text-xs font-semibold text-orange-600">
+              Nagad
+            </div>
+            <div className="bg-white p-2 rounded text-xs font-semibold text-purple-600">
+              Rocket
+            </div>
+            <div className="bg-white p-2 rounded text-xs font-semibold text-blue-600">
+              Visa
+            </div>
+            <div className="bg-white p-2 rounded text-xs font-semibold text-red-600">
+              MasterCard
+            </div>
+            <div className="bg-white p-2 rounded text-xs font-semibold text-green-600">
+              AMEX
+            </div>
           </div>
         </div>
 

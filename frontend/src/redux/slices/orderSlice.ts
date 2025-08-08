@@ -1,5 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import type { PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
+import type { Order } from "../../types/order"; // Import the Order type
+
+// Define the OrderState interface
+interface OrderState {
+  orders: Order[];
+  totalOrders: number;
+  orderDetails: Order | null;
+  loading: boolean;
+  error: string | null;
+}
 
 // Async thunk to fetch user orders
 export const fetchUserOrders = createAsyncThunk(
@@ -15,8 +26,8 @@ export const fetchUserOrders = createAsyncThunk(
         }
       );
       return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch orders");
     }
   }
 );
@@ -24,7 +35,7 @@ export const fetchUserOrders = createAsyncThunk(
 // Async thunk to fetch orders details by ID
 export const fetchOrderDetails = createAsyncThunk(
   "orders/fetchOrderDetails",
-  async (orderId, { rejectWithValue }) => {
+  async (orderId: string, { rejectWithValue }) => {
     try {
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/api/orders/${orderId}`,
@@ -35,8 +46,8 @@ export const fetchOrderDetails = createAsyncThunk(
         }
       );
       return response.data;
-    } catch (error) {
-      return rejectWithValue(error.response.data);
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch order details");
     }
   }
 );
@@ -44,7 +55,7 @@ export const fetchOrderDetails = createAsyncThunk(
 // Async thunk to create a new order
 export const createOrder = createAsyncThunk(
   "orders/createOrder",
-  async (orderData, { rejectWithValue }) => {
+  async (orderData: any, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem("userToken");
       
@@ -74,46 +85,49 @@ export const createOrder = createAsyncThunk(
   }
 );
 
+const initialState: OrderState = {
+  orders: [],
+  totalOrders: 0,
+  orderDetails: null,
+  loading: false,
+  error: null,
+};
+
 const orderSlice = createSlice({
   name: "orders",
-  initialState: {
-    orders: [],
-    totalOrders: 0,
-    orderDetails: null,
-    loading: false,
-    error: null,
-  },
+  initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchUserOrders.pending, (state) => {
-        state.loading = true, 
+        state.loading = true;
         state.error = null;
       })
-      .addCase(fetchUserOrders.fulfilled, (state, action) => {
+      .addCase(fetchUserOrders.fulfilled, (state, action: PayloadAction<Order[]>) => {
         state.loading = false;
         state.orders = action.payload;
       })
       .addCase(fetchUserOrders.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.message;
+        state.error = action.payload as string;
       })
       .addCase(fetchOrderDetails.pending, (state) => {
-        state.loading = true, 
+        state.loading = true;
         state.error = null;
       })
-      .addCase(fetchOrderDetails.fulfilled, (state, action) => {
+      .addCase(fetchOrderDetails.fulfilled, (state, action: PayloadAction<Order>) => {
         state.loading = false;
         state.orderDetails = action.payload;
       })
       .addCase(fetchOrderDetails.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.message;
-      }).addCase(createOrder.pending, (state) => {
+        state.error = action.payload as string;
+      })
+      .addCase(createOrder.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(createOrder.fulfilled, (state, action) => {
+      .addCase(createOrder.fulfilled, (state, action: PayloadAction<Order>) => {
         state.loading = false;
         state.orders.unshift(action.payload); // Add new order to the beginning
         state.totalOrders += 1;
@@ -121,7 +135,7 @@ const orderSlice = createSlice({
       })
       .addCase(createOrder.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload.message;
+        state.error = action.payload as string;
       });
   },
 });

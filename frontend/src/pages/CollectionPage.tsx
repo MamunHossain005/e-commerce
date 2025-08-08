@@ -6,20 +6,20 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProductsByFilters } from "../redux/slices/productsSlice";
 import ProductGrid from "../components/Products/ProductGrid";
+import type { RootState, AppDispatch } from "../redux/store";
 
 const CollectionPage = () => {
   const { collection } = useParams();
   const [searchParams] = useSearchParams();
-  const dispatch = useDispatch();
-  const { products, loading, error } = useSelector((state) => state.products);
+  const dispatch = useDispatch<AppDispatch>(); // Use AppDispatch instead of useDispatch
+  const { products, loading, error } = useSelector((state: RootState) => state.products);
   const queryParams = Object.fromEntries([...searchParams]);
-
   const sidebarRef = useRef<HTMLDivElement>(null);
   const filterButtonRef = useRef<HTMLButtonElement>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchProductsByFilters({ collection, ...queryParams}));
+    dispatch(fetchProductsByFilters({ collection, ...queryParams }));
   }, [dispatch, collection, searchParams]);
 
   const toggleSidebar = () => {
@@ -41,7 +41,6 @@ const CollectionPage = () => {
   useEffect(() => {
     // Add Event Listener for clicks
     document.addEventListener("mousedown", handleClickOutside);
-
     // Return cleanup function
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -78,9 +77,8 @@ const CollectionPage = () => {
         <h2 className="text-2xl uppercase mb-4">All Collection</h2>
         {/* sort options */}
         <SortOptions />
-
         {/* Product grid */}
-        <ProductGrid products={products} loading={loading} error={error}/>
+        <ProductGrid products={products} loading={loading} error={error} />
       </div>
     </div>
   );

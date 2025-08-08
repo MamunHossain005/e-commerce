@@ -1,10 +1,11 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import featured from "../../assets/featured.webp";
+import type { Variants } from "framer-motion";
 
 const FeaturedCollection = () => {
   // Animation variants
-  const containerVariants = {
+  const containerVariants : Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -14,7 +15,7 @@ const FeaturedCollection = () => {
     },
   };
 
-  const leftContentVariants = {
+  const leftContentVariants : Variants = {
     hidden: { x: -50, opacity: 0 },
     visible: {
       x: 0,
@@ -26,7 +27,7 @@ const FeaturedCollection = () => {
     },
   };
 
-  const rightContentVariants = {
+  const rightContentVariants : Variants = {
     hidden: { x: 50, opacity: 0 },
     visible: {
       x: 0,
@@ -38,7 +39,7 @@ const FeaturedCollection = () => {
     },
   };
 
-  const textVariants = {
+  const textVariants : Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
@@ -50,7 +51,7 @@ const FeaturedCollection = () => {
     },
   };
 
-  const buttonVariants = {
+  const buttonVariants : Variants = {
     hidden: { y: 20, opacity: 0 },
     visible: {
       y: 0,
@@ -65,7 +66,7 @@ const FeaturedCollection = () => {
       scale: 1.05,
       transition: {
         duration: 0.3,
-        yoyo: Infinity,
+        repeat: Infinity,
         repeatType: "reverse",
       },
     },
@@ -74,7 +75,7 @@ const FeaturedCollection = () => {
     },
   };
 
-  const imageVariants = {
+  const imageVariants : Variants = {
     hidden: { scale: 0.9, opacity: 0 },
     visible: {
       scale: 1,

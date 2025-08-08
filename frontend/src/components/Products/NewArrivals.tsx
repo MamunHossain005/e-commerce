@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import type { Variants } from "framer-motion";
 
 interface NewArrivalImage {
   url: string;
@@ -27,7 +28,7 @@ const NewArrivals = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants : Variants = {
     hidden: { opacity: 0, y: 50 },
     visible: {
       opacity: 1,
@@ -39,7 +40,7 @@ const NewArrivals = () => {
     }
   };
 
-  const titleVariants = {
+  const titleVariants : Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: { 
       opacity: 1, 
@@ -48,7 +49,7 @@ const NewArrivals = () => {
     }
   };
 
-  const buttonVariants = {
+  const buttonVariants : Variants = {
     idle: { scale: 1, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" },
     hover: { 
       scale: 1.05,
@@ -63,7 +64,7 @@ const NewArrivals = () => {
     }
   };
 
-  const cardVariants = {
+  const cardVariants : Variants = {
     hidden: { opacity: 0, x: 50, scale: 0.9 },
     visible: { 
       opacity: 1, 
@@ -82,7 +83,7 @@ const NewArrivals = () => {
     }
   };
 
-  const imageVariants = {
+  const imageVariants : Variants = {
     initial: { scale: 1 },
     hover: { 
       scale: 1.1,
@@ -90,7 +91,7 @@ const NewArrivals = () => {
     }
   };
 
-  const overlayVariants = {
+  const overlayVariants : Variants = {
     initial: { 
       opacity: 0.5,
       backdropFilter: "blur(8px)",
@@ -104,7 +105,7 @@ const NewArrivals = () => {
     }
   };
 
-  const loadingVariants = {
+  const loadingVariants : Variants = {
     animate: {
       scale: [1, 1.2, 1],
       opacity: [0.5, 1, 0.5],

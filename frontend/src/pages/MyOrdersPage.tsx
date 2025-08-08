@@ -1,39 +1,52 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { fetchUserOrders } from "../redux/slices/orderSlice";
-
-type Order = {
-  _id: string;
-  createdAt: Date;
-  shippingAddress: {
-    city: string;
-    country: string;
-  };
-  orderItems: {
-    name: string;
-    image: string;
-  }[];
-  totalPrice: number;
-  isPaid: boolean;
-};
+import type { RootState } from "../redux/store";
+import type { AppDispatch } from "../redux/store";
+import type { Order } from "../types/order"; // This should now use your updated Order type
 
 const MyOrdersPage = () => {
-  const navigate  = useNavigate();
-  const dispatch = useDispatch();
-  const { orders, loading, error} = useSelector((state) => state.orders);
-
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { orders, loading, error } = useSelector((state: RootState) => state.orders);
+  
   useEffect(() => {
     dispatch(fetchUserOrders());
   }, [dispatch]);
 
   const handleRowClick = (orderId: string): void => {
     navigate(`/order/${orderId}`);
-  }
+  };
 
-  if(loading) return <p>Loading...</p>
-  if(error) <p>Error: {error}</p>
-  
+  // 处理日期的辅助函数
+  const formatDate = (date: Date | string): string => {
+    const d = typeof date === 'string' ? new Date(date) : date;
+    return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
+  };
+
+  // 计算是否可以取消订单（前端逻辑）
+  const calculateCanBeCancelled = (order: Order): boolean => {
+    // 不能取消已送达的订单
+    if (order.isDelivered) return false;
+    
+    // 不能取消已取消的订单
+    if (order.isCancelled || order.status === 'Cancel' || order.paymentStatus === 'Cancelled') return false;
+    
+    // 没有交易ID且已支付的订单不能取消（需要退款）
+    if (!order.paymentDetails?.transactionId && order.isPaid) return false;
+    
+    // 检查24小时窗口
+    const createdAt = typeof order.createdAt === 'string' 
+      ? new Date(order.createdAt) 
+      : order.createdAt;
+    const hoursDiff = (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+    return hoursDiff <= 24;
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6">
       <h2 className="text-xl sm:text-2xl font-bold mb-6">My Orders</h2>
@@ -52,50 +65,59 @@ const MyOrdersPage = () => {
           </thead>
           <tbody>
             {orders.length > 0 ? (
-              orders.map((order) => (
-                <tr
-                  key={order._id}
-                  onClick={ () => handleRowClick(order._id)}
-                  className="border-b hover:border-gray-50 cursor-pointer"
-                >
-                  <td className="py-2 px-2 sm:py-4 sm:px-4">
-                    <img
-                      src={order.orderItems[0].image}
-                      alt={order.orderItems[0].name}
-                      className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg"
-                    />
-                  </td>
-                  <td className="py-2 px-2 sm:py-4 font-medium text-gray-900 whitespace-nowrap">
-                    #{order._id}
-                  </td>
-                  <td className="py-2 px-2 sm:py-4 sm:px-4">
-                    {new Date(order.createdAt).toLocaleDateString()}{" "}
-                    {new Date(order.createdAt).toLocaleTimeString()}
-                  </td>
-                  <td className="py-2 px-2 sm:py-4 sm:px-4">
-                    {order.shippingAddress
-                      ? `${order.shippingAddress.city}, ${order.shippingAddress.country}`
-                      : "N/A"}
-                  </td>
-                  <td className="py-2 px-2 sm:py-4 sm:px-4">
-                    {order.orderItems.length}
-                  </td>
-                  <td className="py-2 px-2 sm:py-4 sm:px-4">
-                    ${order.totalPrice}
-                  </td>
-                  <td className="py-2 px-2 sm:py-4 sm:px-4">
-                    <span
-                      className={`${
-                        order.isPaid
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      } px-2 py-1 rounded-full text-xs sm:text-sm font-medium`}
-                    >
-                      {order.isPaid ? "Paid" : "Pending"}
-                    </span>
-                  </td>
-                </tr>
-              ))
+              orders.map((order: Order) => {
+                // 计算是否可以取消
+                const canBeCancelled = order.canBeCancelled ?? calculateCanBeCancelled(order);
+                
+                return (
+                  <tr
+                    key={order._id}
+                    onClick={() => handleRowClick(order._id)}
+                    className="border-b hover:border-gray-50 cursor-pointer"
+                  >
+                    <td className="py-2 px-2 sm:py-4 sm:px-4">
+                      <img
+                        src={order.orderItems[0].image}
+                        alt={order.orderItems[0].name}
+                        className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-lg"
+                      />
+                    </td>
+                    <td className="py-2 px-2 sm:py-4 font-medium text-gray-900 whitespace-nowrap">
+                      #{order._id}
+                    </td>
+                    <td className="py-2 px-2 sm:py-4 sm:px-4">
+                      {formatDate(order.createdAt)}
+                    </td>
+                    <td className="py-2 px-2 sm:py-4 sm:px-4">
+                      {order.shippingAddress
+                        ? `${order.shippingAddress.city}, ${order.shippingAddress.country}`
+                        : "N/A"}
+                    </td>
+                    <td className="py-2 px-2 sm:py-4 sm:px-4">
+                      {order.orderItems.length}
+                    </td>
+                    <td className="py-2 px-2 sm:py-4 sm:px-4">
+                      ${order.totalPrice.toFixed(2)}
+                    </td>
+                    <td className="py-2 px-2 sm:py-4 sm:px-4">
+                      <span
+                        className={`${
+                          order.isPaid
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        } px-2 py-1 rounded-full text-xs sm:text-sm font-medium`}
+                      >
+                        {order.isPaid ? "Paid" : "Pending"}
+                      </span>
+                      {canBeCancelled && (
+                        <span className="ml-2 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs sm:text-sm font-medium">
+                          Cancellable
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td colSpan={7} className="py-4 px-4 text-center text-gray-500">

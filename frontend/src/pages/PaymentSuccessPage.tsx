@@ -3,16 +3,18 @@ import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchOrderDetails } from "../redux/slices/orderSlice";
-import { fetchCart, clearCart } from "../redux/slices/cartSlice";
+import { clearCart } from "../redux/slices/cartSlice";
+import type { RootState } from "../redux/store";
+import type { AppDispatch } from "../redux/store";
 
 const PaymentSuccessPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const dispatch = useDispatch();
-  const [orderId, setOrderId] = useState(null);
-  const [transactionId, setTransactionId] = useState(null);
-  const { user, guestId } = useSelector((state) => state.auth);
-  const { orderDetails, loading, error } = useSelector((state) => state.orders);
+  const dispatch = useDispatch<AppDispatch>();
+  const [orderId, setOrderId] = useState<string | null>(null);
+  const [transactionId, setTransactionId] = useState<string | null>(null);
+  const { user, guestId } = useSelector((state : RootState) => state.auth);
+  const { orderDetails, loading, error } = useSelector((state : RootState) => state.orders);
 
   useEffect(() => {
     // Extract query parameters from the URL
@@ -38,8 +40,8 @@ const PaymentSuccessPage = () => {
       dispatch(clearCart());
       
       // Refetch cart to get the updated state from server
-      const userId = user ? user._id : null;
-      dispatch(fetchCart({ userId, guestId }));
+      // const userId = user ? user._id : null;
+      // dispatch(fetchCart({ userId, guestId }));
     }
   }, [location.search, dispatch, user, guestId]);
 
@@ -52,6 +54,9 @@ const PaymentSuccessPage = () => {
   const handleContinueShopping = () => {
     navigate("/");
   };
+
+  if(loading) <div>Loading...</div>
+  if(error) <div>Error: {error}</div>
 
   return (
     <div className="max-w-4xl mx-auto p-4 sm:p-6">

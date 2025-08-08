@@ -4,15 +4,17 @@ import login from "../assets/login.webp";
 import { loginUser } from "../redux/slices/authSlice"
 import { useDispatch, useSelector } from "react-redux";
 import { mergeCart } from "../redux/slices/cartSlice";
+import type { RootState } from "../redux/store";
+import type { AppDispatch } from "../redux/store";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, guestId, loading } = useSelector((state) => state.auth);
-  const { cart } = useSelector((state) => state.cart);
+  const { user, guestId, loading } = useSelector((state: RootState) => state.auth);
+  const { cart } = useSelector((state: RootState) => state.cart);
 
   // Get redirect parameter and check if it's checkout or something
   const redirect = new URLSearchParams(location.search).get("redirect") || "/";

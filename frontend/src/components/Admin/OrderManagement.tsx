@@ -47,6 +47,20 @@ interface Order {
   updatedAt: string;
 }
 
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  error: string | null;
+}
+
 interface RootState {
   adminOrders: {
     orders: Order[];
@@ -55,6 +69,7 @@ interface RootState {
     loading: boolean;
     error: string | null;
   };
+  auth: AuthState;
 }
 
 const OrderManagement = () => {
@@ -68,7 +83,7 @@ const OrderManagement = () => {
   const { orders, loading, error } = useSelector(
     (state: RootState) => state.adminOrders
   );
-  const { user } = useSelector((state) => state.auth);
+  const { user } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     if (!user || user.role !== "admin") {

@@ -1,10 +1,11 @@
 import { motion } from "framer-motion";
 import { HiOutlineCreditCard, HiShoppingBag } from "react-icons/hi";
 import { HiArrowPathRoundedSquare } from "react-icons/hi2";
+import type { Variants } from "framer-motion";
 
 const FeaturesSection = () => {
   // Animation variants for the container
-  const containerVariants = {
+  const containerVariants : Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
@@ -15,7 +16,7 @@ const FeaturesSection = () => {
   };
 
   // Animation variants for each feature card
-  const featureVariants = {
+  const featureVariants : Variants = {
     hidden: { y: 30, opacity: 0 },
     visible: {
       y: 0,
@@ -35,7 +36,7 @@ const FeaturesSection = () => {
   };
 
   // Animation variants for icons
-  const iconVariants = {
+  const iconVariants : Variants = {
     hidden: { scale: 0.8, opacity: 0 },
     visible: {
       scale: 1,
@@ -58,7 +59,7 @@ const FeaturesSection = () => {
   };
 
   // Animation variants for text
-  const textVariants = {
+  const textVariants : Variants = {
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,

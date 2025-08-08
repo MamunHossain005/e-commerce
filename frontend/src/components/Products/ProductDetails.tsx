@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -9,26 +9,26 @@ import {
   fetchSimilarProducts,
 } from "../../redux/slices/productsSlice";
 import { addToCart } from "../../redux/slices/cartSlice";
+import type { RootState, AppDispatch } from "../../redux/store";
+import type { Variants } from "framer-motion";
 
-const ProductDetails = ({ productId }) => {
-  const { id } = useParams();
-  const dispatch = useDispatch();
+const ProductDetails = ({ productId }: { productId?: string }) => {
+  const { id } = useParams<{ id: string }>();
+  const dispatch = useDispatch<AppDispatch>();
   const { selectedProduct, loading, error, similarProducts } = useSelector(
-    (state) => state.products
+    (state: RootState) => state.products
   );
-  const { user, guesId } = useSelector((state) => state.auth);
-
+  const { user, guestId } = useSelector((state: RootState) => state.auth);
   // Initialize with null/empty values and set them in useEffect
-  const [mainImage, setMainImage] = useState(null);
+  const [mainImage, setMainImage] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
-
   const productFetchId = productId || id;
 
   // Animation variants
-  const pageVariants = {
+  const pageVariants: Variants = {
     hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
@@ -40,7 +40,7 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const imageVariants = {
+  const imageVariants: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
     visible: { 
       opacity: 1, 
@@ -53,7 +53,7 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const thumbnailVariants = {
+  const thumbnailVariants: Variants = {
     inactive: { 
       scale: 1, 
       opacity: 0.7,
@@ -72,7 +72,7 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const contentVariants = {
+  const contentVariants: Variants = {
     hidden: { opacity: 0, x: 30 },
     visible: { 
       opacity: 1, 
@@ -81,10 +81,19 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const buttonVariants = {
-    idle: { 
-      scale: 1, 
+  const buttonVariants: Variants = {
+    initial: { 
+      opacity: 0, 
+      y: 15,
+      scale: 1,
       boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)" 
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
+      transition: { duration: 0.6, delay: 0.8 }
     },
     hover: { 
       scale: 1.02,
@@ -101,7 +110,7 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const quantityVariants = {
+  const quantityVariants: Variants = {
     idle: { scale: 1 },
     hover: { 
       scale: 1.05,
@@ -111,7 +120,7 @@ const ProductDetails = ({ productId }) => {
     tap: { scale: 0.95 }
   };
 
-  const colorVariants = {
+  const colorVariants: Variants = {
     unselected: { 
       scale: 1, 
       borderWidth: "1px",
@@ -129,7 +138,7 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const sizeVariants = {
+  const sizeVariants: Variants = {
     unselected: { 
       scale: 1,
       backgroundColor: "#ffffff",
@@ -148,7 +157,7 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const loadingVariants = {
+  const loadingVariants: Variants = {
     animate: {
       rotate: 360,
       transition: {
@@ -159,40 +168,51 @@ const ProductDetails = ({ productId }) => {
     }
   };
 
-  const handleQuantityChange = (action) => {
-    if (action === "plus") {
+  const handleQuantityChange = (action: "plus" | "minus") => {
+    if (action === "plus" && quantity < (selectedProduct?.countInStock || 0)) {
       setQuantity((prev) => prev + 1);
     } else if (action === "minus" && quantity > 1) {
       setQuantity((prev) => prev - 1);
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!selectedColor || !selectedSize) {
       toast.error("Please select a color and size before adding to cart.", {
         duration: 1000,
       });
       return;
     }
-    setIsButtonDisabled(true);
-    dispatch(
-      addToCart({
-        productId: productFetchId,
-        quantity,
-        size: selectedSize,
-        color: selectedColor,
-        guesId,
-        userId: user?._id,
-      })
-    )
-      .then(() => {
-        toast.success("Product added to cart!", {
-          duration: 1000,
-        });
-      })
-      .finally(() => {
-        setIsButtonDisabled(false);
+    if (quantity > (selectedProduct?.countInStock || 0)) {
+      toast.error("Not enough stock available", {
+        duration: 1000,
       });
+      return;
+    }
+    setIsButtonDisabled(true);
+    
+    try {
+      await dispatch(
+        addToCart({
+          productId: productFetchId!,
+          quantity,
+          size: selectedSize,
+          color: selectedColor,
+          guestId,
+          userId: user?._id,
+        })
+      ).unwrap();
+      
+      toast.success("Product added to cart!", {
+        duration: 1000,
+      });
+    } catch (error) {
+      toast.error("Failed to add product to cart", {
+        duration: 1000,
+      });
+    } finally {
+      setIsButtonDisabled(false);
+    }
   };
 
   // Fetch product data
@@ -205,10 +225,18 @@ const ProductDetails = ({ productId }) => {
 
   // Set main image when selectedProduct changes
   useEffect(() => {
-    if (selectedProduct?.images?.length > 0) {
+    if (selectedProduct?.images && selectedProduct.images.length > 0) {
       setMainImage(selectedProduct.images[0].url);
     }
   }, [selectedProduct]);
+
+  // Calculate discount percentage
+  const discountPercentage = selectedProduct?.discountPrice && selectedProduct?.price 
+    ? Math.round(((selectedProduct.price - selectedProduct.discountPrice) / selectedProduct.price) * 100)
+    : 0;
+
+  // Get final price (discount price if available, otherwise regular price)
+  const finalPrice = selectedProduct?.discountPrice || selectedProduct?.price;
 
   if (loading) {
     return (
@@ -282,7 +310,7 @@ const ProductDetails = ({ productId }) => {
               <motion.img
                 key={index}
                 src={image.url}
-                alt={image.alt}
+                alt={image.altText || `Product image ${index + 1}`}
                 onClick={() => setMainImage(image.url)}
                 className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 ${
                   mainImage === image.url
@@ -296,17 +324,21 @@ const ProductDetails = ({ productId }) => {
               />
             ))}
           </motion.div>
-
           {/* Main Image */}
           <motion.div 
             className="md:w-1/2"
             variants={contentVariants}
           >
-            <div className="mb-4">
+            <div className="mb-4 relative">
+              {discountPercentage > 0 && (
+                <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-medium z-10">
+                  -{discountPercentage}%
+                </div>
+              )}
               <AnimatePresence mode="wait">
                 <motion.img
                   key={mainImage}
-                  src={mainImage}
+                  src={mainImage || undefined}
                   alt="Main Product"
                   className="w-full h-auto object-cover rounded-lg"
                   variants={imageVariants}
@@ -318,7 +350,6 @@ const ProductDetails = ({ productId }) => {
               </AnimatePresence>
             </div>
           </motion.div>
-
           {/* Mobile Thumbnails */}
           <motion.div 
             className="md:hidden flex overflow-x-auto space-x-4 mb-4"
@@ -328,9 +359,9 @@ const ProductDetails = ({ productId }) => {
               <motion.img
                 key={index}
                 src={image.url}
-                alt={image.alt || `Thumbnail ${index}`}
+                alt={image.altText || `Thumbnail ${index + 1}`}
                 onClick={() => setMainImage(image.url)}
-                className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 ${
+                className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-4 flex-shrink-0 ${
                   mainImage === image.url
                     ? "border-blue-500"
                     : "border-gray-300"
@@ -342,7 +373,6 @@ const ProductDetails = ({ productId }) => {
               />
             ))}
           </motion.div>
-
           {/* Right side */}
           <motion.div 
             className="md:w-1/2 md:ml-10"
@@ -356,22 +386,80 @@ const ProductDetails = ({ productId }) => {
             >
               {selectedProduct.name}
             </motion.h1>
-
+            {/* SKU */}
+            <motion.p 
+              className="text-sm text-gray-500 mb-2"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+            >
+              SKU: {selectedProduct.sku}
+            </motion.p>
+            {/* Rating */}
             <motion.div
+              className="flex items-center mb-3"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.28 }}
+            >
+              <div className="flex items-center">
+                {[...Array(5)].map((_, i) => (
+                  <span
+                    key={i}
+                    className={`text-sm ${
+                      i < Math.floor(selectedProduct.rating || 0)
+                        ? "text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  >
+                    ★
+                  </span>
+                ))}
+                <span className="ml-2 text-sm text-gray-600">
+                  ({selectedProduct.numReviews || 0} reviews)
+                </span>
+              </div>
+            </motion.div>
+            {/* Price */}
+            <motion.div
+              className="mb-4"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
             >
-              {selectedProduct.originalPrice && (
-                <p className="text-lg text-gray-600 mb-1 line-through">
-                  ${selectedProduct.originalPrice.toFixed(2)}
+              <div className="flex items-center space-x-3">
+                <p className="text-2xl text-gray-900 font-bold">
+                  ${finalPrice?.toFixed(2)}
                 </p>
-              )}
-              <p className="text-xl text-gray-900 mb-2 font-bold">
-                ${selectedProduct.price}
+                {selectedProduct.discountPrice && (
+                  <p className="text-lg text-gray-500 line-through">
+                    ${selectedProduct.price.toFixed(2)}
+                  </p>
+                )}
+              </div>
+            </motion.div>
+            {/* Stock Status */}
+            <motion.div
+              className="mb-4"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.35 }}
+            >
+              <p className={`text-sm font-medium ${
+                selectedProduct.countInStock > 0 
+                  ? selectedProduct.countInStock < 10 
+                    ? "text-orange-600" 
+                    : "text-green-600"
+                  : "text-red-600"
+              }`}>
+                {selectedProduct.countInStock > 0 
+                  ? selectedProduct.countInStock < 10 
+                    ? `Only ${selectedProduct.countInStock} left in stock!`
+                    : `In Stock (${selectedProduct.countInStock} available)`
+                  : "Out of Stock"
+                }
               </p>
             </motion.div>
-
             <motion.p 
               className="text-gray-600 mb-4"
               initial={{ opacity: 0, y: 15 }}
@@ -380,113 +468,124 @@ const ProductDetails = ({ productId }) => {
             >
               {selectedProduct.description}
             </motion.p>
-
             {/* Color Selection */}
-            <motion.div 
-              className="mb-4"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-            >
-              <h3 className="text-gray-700 mb-2 font-medium">Color:</h3>
-              <div className="flex gap-3">
-                {selectedProduct.colors?.map((color) => (
-                  <motion.button
-                    key={color}
-                    onClick={() => setSelectedColor(color)}
-                    className="w-8 h-8 rounded-full border-gray-300"
-                    style={{
-                      backgroundColor: color.toLowerCase(),
-                      filter: "brightness(0.5)",
-                    }}
-                    variants={colorVariants}
-                    animate={selectedColor === color ? "selected" : "unselected"}
-                    whileHover="hover"
-                    whileTap={{ scale: 0.9 }}
-                  />
-                ))}
-              </div>
-            </motion.div>
-
+            {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <h3 className="text-gray-700 mb-2 font-medium">
+                  Color: {selectedColor && <span className="capitalize">{selectedColor}</span>}
+                </h3>
+                <div className="flex gap-3">
+                  {selectedProduct.colors.map((color) => (
+                    <motion.button
+                      key={color}
+                      onClick={() => setSelectedColor(color)}
+                      className="w-8 h-8 rounded-full border-gray-300 relative"
+                      style={{
+                        backgroundColor: color.toLowerCase(),
+                      }}
+                      variants={colorVariants}
+                      animate={selectedColor === color ? "selected" : "unselected"}
+                      whileHover="hover"
+                      whileTap={{ scale: 0.9 }}
+                      title={color}
+                    >
+                      {selectedColor === color && (
+                        <div className="absolute inset-0 rounded-full border-2 border-blue-500" />
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
             {/* Size Selection */}
-            <motion.div 
-              className="mb-4"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              <p className="text-gray-700 mb-2 font-medium">Size:</p>
-              <div className="flex gap-2">
-                {selectedProduct.sizes?.map((size) => (
-                  <motion.button
-                    key={size}
-                    onClick={() => setSelectedSize(size)}
-                    className="px-4 py-2 rounded border border-gray-300"
-                    variants={sizeVariants}
-                    animate={selectedSize === size ? "selected" : "unselected"}
-                    whileHover={selectedSize === size ? {} : "hover"}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    {size}
-                  </motion.button>
-                ))}
-              </div>
-            </motion.div>
-
+            {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
+              <motion.div 
+                className="mb-4"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <p className="text-gray-700 mb-2 font-medium">
+                  Size: {selectedSize && <span>{selectedSize}</span>}
+                </p>
+                <div className="flex gap-2 flex-wrap">
+                  {selectedProduct.sizes.map((size) => (
+                    <motion.button
+                      key={size}
+                      onClick={() => setSelectedSize(size)}
+                      className="px-4 py-2 rounded border border-gray-300 min-w-[3rem]"
+                      variants={sizeVariants}
+                      animate={selectedSize === size ? "selected" : "unselected"}
+                      whileHover={selectedSize === size ? {} : "hover"}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {size}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            )}
             {/* Quantity */}
-            <motion.div 
-              className="mb-6"
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.7 }}
-            >
-              <p className="text-gray-700 mb-2 font-medium">Quantity:</p>
-              <div className="flex items-center space-x-4">
-                <motion.button
-                  onClick={() => handleQuantityChange("minus")}
-                  className="px-3 py-1 border rounded bg-gray-100 text-lg font-medium"
-                  variants={quantityVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                  disabled={quantity <= 1}
-                >
-                  -
-                </motion.button>
-                <motion.span 
-                  className="text-lg font-medium min-w-[2rem] text-center"
-                  key={quantity}
-                  initial={{ scale: 1.2 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {quantity}
-                </motion.span>
-                <motion.button
-                  onClick={() => handleQuantityChange("plus")}
-                  className="px-3 py-1 border rounded bg-gray-100 text-lg font-medium"
-                  variants={quantityVariants}
-                  whileHover="hover"
-                  whileTap="tap"
-                >
-                  +
-                </motion.button>
-              </div>
-            </motion.div>
-
+            {selectedProduct.countInStock > 0 && (
+              <motion.div 
+                className="mb-6"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
+                <p className="text-gray-700 mb-2 font-medium">Quantity:</p>
+                <div className="flex items-center space-x-4">
+                  <motion.button
+                    onClick={() => handleQuantityChange("minus")}
+                    className="px-3 py-1 border rounded bg-gray-100 text-lg font-medium disabled:opacity-50"
+                    variants={quantityVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </motion.button>
+                  <motion.span 
+                    className="text-lg font-medium min-w-[2rem] text-center"
+                    key={quantity}
+                    initial={{ scale: 1.2 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {quantity}
+                  </motion.span>
+                  <motion.button
+                    onClick={() => handleQuantityChange("plus")}
+                    className="px-3 py-1 border rounded bg-gray-100 text-lg font-medium disabled:opacity-50"
+                    variants={quantityVariants}
+                    whileHover="hover"
+                    whileTap="tap"
+                    disabled={quantity >= selectedProduct.countInStock}
+                  >
+                    +
+                  </motion.button>
+                </div>
+              </motion.div>
+            )}
             {/* Add to Cart Button */}
             <motion.button
               onClick={handleAddToCart}
-              disabled={isButtonDisabled}
-              className="bg-black text-white py-3 px-6 rounded w-full mb-4 font-medium transition-colors hover:bg-gray-800"
+              disabled={isButtonDisabled || selectedProduct.countInStock === 0}
+              className="bg-black text-white py-3 px-6 rounded w-full mb-4 font-medium transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
               variants={buttonVariants}
-              animate={isButtonDisabled ? "disabled" : "idle"}
-              whileHover={isButtonDisabled ? {} : "hover"}
-              whileTap={isButtonDisabled ? {} : "tap"}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
+              initial="initial"
+              animate={isButtonDisabled || selectedProduct.countInStock === 0 ? "disabled" : "visible"}
+              whileHover={isButtonDisabled || selectedProduct.countInStock === 0 ? {} : "hover"}
+              whileTap={isButtonDisabled || selectedProduct.countInStock === 0 ? {} : "tap"}
             >
-              {isButtonDisabled ? (
+              {selectedProduct.countInStock === 0 ? (
+                "Out of Stock"
+              ) : isButtonDisabled ? (
                 <motion.span
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -503,39 +602,98 @@ const ProductDetails = ({ productId }) => {
                 "Add to Cart"
               )}
             </motion.button>
-
-            {/* Characteristics */}
+            {/* Product Details */}
             <motion.div 
               className="mt-10 text-gray-700"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.9 }}
             >
-              <h3 className="text-xl font-bold mb-4">Characteristics</h3>
+              <h3 className="text-xl font-bold mb-4">Product Details</h3>
               <table className="w-full text-left text-sm text-gray-600">
                 <tbody>
+                  {selectedProduct.brand && (
+                    <motion.tr
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.0 }}
+                    >
+                      <td className="py-2 font-medium">Brand</td>
+                      <td className="py-2">{selectedProduct.brand}</td>
+                    </motion.tr>
+                  )}
                   <motion.tr
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.4, delay: 1.0 }}
+                    transition={{ duration: 0.4, delay: 1.05 }}
                   >
-                    <td className="py-2 font-medium">Brand</td>
-                    <td className="py-2">{selectedProduct.brand}</td>
+                    <td className="py-2 font-medium">Category</td>
+                    <td className="py-2 capitalize">{selectedProduct.category}</td>
                   </motion.tr>
                   <motion.tr
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ duration: 0.4, delay: 1.1 }}
                   >
-                    <td className="py-2 font-medium">Material</td>
-                    <td className="py-2">{selectedProduct.material}</td>
+                    <td className="py-2 font-medium">Collection</td>
+                    <td className="py-2 capitalize">{selectedProduct.collections}</td>
                   </motion.tr>
+                  {selectedProduct.material && (
+                    <motion.tr
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.15 }}
+                    >
+                      <td className="py-2 font-medium">Material</td>
+                      <td className="py-2">{selectedProduct.material}</td>
+                    </motion.tr>
+                  )}
+                  {selectedProduct.gender && (
+                    <motion.tr
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.2 }}
+                    >
+                      <td className="py-2 font-medium">Gender</td>
+                      <td className="py-2">{selectedProduct.gender}</td>
+                    </motion.tr>
+                  )}
+                  {selectedProduct.weight && (
+                    <motion.tr
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.25 }}
+                    >
+                      <td className="py-2 font-medium">Weight</td>
+                      <td className="py-2">{selectedProduct.weight} kg</td>
+                    </motion.tr>
+                  )}
+                  {selectedProduct.tags && selectedProduct.tags.length > 0 && (
+                    <motion.tr
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.4, delay: 1.3 }}
+                    >
+                      <td className="py-2 font-medium">Tags</td>
+                      <td className="py-2">
+                        <div className="flex flex-wrap gap-1">
+                          {selectedProduct.tags.map((tag, index) => (
+                            <span 
+                              key={index}
+                              className="bg-gray-100 px-2 py-1 rounded text-xs"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </td>
+                    </motion.tr>
+                  )}
                 </tbody>
               </table>
             </motion.div>
           </motion.div>
         </div>
-
         {/* Similar Products */}
         {similarProducts && similarProducts.length > 0 && (
           <motion.div 
