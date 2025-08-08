@@ -24,11 +24,26 @@ interface ProductGridProps {
 
 const ProductGrid = ({ products, loading, error }: ProductGridProps) => {
   if (loading) {
-    return <p>Loading...</p>;
+    return (
+      <div className="p-6 flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-lg">Loading Products...</p>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error: {error}</p>;
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Error loading products: {error}</p>
+        </div>
+      </div>
+    );
   }
 
   return (

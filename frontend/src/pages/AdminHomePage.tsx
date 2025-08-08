@@ -93,28 +93,31 @@ const AdminHomePage = () => {
   const totalRevenue = totalSales || 0;
   const totalProducts = products?.length || 0;
   const totalUsers = users?.length || 0;
-  
+
   // Filter orders by different statuses based on your schema
-  const pendingOrders = orders?.filter(
-    (order) => order?.status === "Processing" || order?.paymentStatus === "Pending"
-  )?.length || 0;
-  
-  const cancelledOrders = orders?.filter(
-    (order) => order?.status === "Cancel" || order?.isCancelled
-  )?.length || 0;
-  
-  const deliveredOrders = orders?.filter(
-    (order) => order?.status === "Delivered" || order?.isDelivered
-  )?.length || 0;
-  
-  const shippedOrders = orders?.filter(
-    (order) => order?.status === "Shipped"
-  )?.length || 0;
+  const pendingOrders =
+    orders?.filter(
+      (order) =>
+        order?.status === "Processing" || order?.paymentStatus === "Pending"
+    )?.length || 0;
+
+  const cancelledOrders =
+    orders?.filter((order) => order?.status === "Cancel" || order?.isCancelled)
+      ?.length || 0;
+
+  const deliveredOrders =
+    orders?.filter(
+      (order) => order?.status === "Delivered" || order?.isDelivered
+    )?.length || 0;
+
+  const shippedOrders =
+    orders?.filter((order) => order?.status === "Shipped")?.length || 0;
 
   // Low stock products calculation
-  const lowStockProducts = products?.filter(
-    (product) => (product?.countInStock || product?.stock || 0) < 10
-  )?.length || 0;
+  const lowStockProducts =
+    products?.filter(
+      (product) => (product?.countInStock || product?.stock || 0) < 10
+    )?.length || 0;
 
   const getStatusColor = (status: string): string => {
     switch (status) {
@@ -160,13 +163,36 @@ const AdminHomePage = () => {
       </div>
       <div>
         {productsLoading || ordersLoading || usersLoading ? (
-          <p>Loading ...</p>
+          <div className="p-6 flex justify-center items-center min-h-screen">
+            <div className="flex justify-center items-center min-h-screen">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
+                <p className="text-lg">Loading...</p>
+              </div>
+            </div>
+          </div>
         ) : productsError ? (
-          <p className="text-red-500">Error fetching products: {productsError}</p>
+          <div className="max-w-7xl mx-auto p-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">
+                Error fetching products: {productsError}
+              </p>
+            </div>
+          </div>
         ) : ordersError ? (
-          <p className="text-red-500">Error fetching orders: {ordersError}</p>
+          <div className="max-w-7xl mx-auto p-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">
+                Error fetching orders: {ordersError}
+              </p>
+            </div>
+          </div>
         ) : usersError ? (
-          <p className="text-red-500">Error fetching users: {usersError}</p>
+          <div className="max-w-7xl mx-auto p-6">
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-800">Error fetching users: {usersError}</p>
+            </div>
+          </div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -204,7 +230,9 @@ const AdminHomePage = () => {
                     <h2 className="text-sm font-medium text-gray-600">
                       Total Orders
                     </h2>
-                    <p className="text-3xl font-bold text-gray-900">{totalOrders}</p>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {totalOrders}
+                    </p>
                     <Link
                       to="/admin/orders"
                       className="text-blue-500 hover:underline text-sm"
@@ -267,8 +295,12 @@ const AdminHomePage = () => {
               <div className="bg-white p-6 shadow-md rounded-lg border border-gray-200">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-medium text-gray-600">Total Users</h2>
-                    <p className="text-3xl font-bold text-gray-900">{totalUsers}</p>
+                    <h2 className="text-sm font-medium text-gray-600">
+                      Total Users
+                    </h2>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {totalUsers}
+                    </p>
                     <Link
                       to="/admin/users"
                       className="text-blue-500 hover:underline text-sm"
@@ -303,7 +335,9 @@ const AdminHomePage = () => {
                     <h3 className="text-sm font-medium text-yellow-800">
                       Processing Orders
                     </h3>
-                    <p className="text-2xl font-bold text-yellow-900">{pendingOrders}</p>
+                    <p className="text-2xl font-bold text-yellow-900">
+                      {pendingOrders}
+                    </p>
                   </div>
                   {pendingOrders > 0 && (
                     <Link
@@ -322,7 +356,9 @@ const AdminHomePage = () => {
                     <h3 className="text-sm font-medium text-blue-800">
                       Shipped Orders
                     </h3>
-                    <p className="text-2xl font-bold text-blue-900">{shippedOrders}</p>
+                    <p className="text-2xl font-bold text-blue-900">
+                      {shippedOrders}
+                    </p>
                   </div>
                   {shippedOrders > 0 && (
                     <Link
@@ -341,7 +377,9 @@ const AdminHomePage = () => {
                     <h3 className="text-sm font-medium text-green-800">
                       Delivered Orders
                     </h3>
-                    <p className="text-2xl font-bold text-green-900">{deliveredOrders}</p>
+                    <p className="text-2xl font-bold text-green-900">
+                      {deliveredOrders}
+                    </p>
                   </div>
                   {deliveredOrders > 0 && (
                     <Link
@@ -360,7 +398,9 @@ const AdminHomePage = () => {
                     <h3 className="text-sm font-medium text-red-800">
                       Cancelled Orders
                     </h3>
-                    <p className="text-2xl font-bold text-red-900">{cancelledOrders}</p>
+                    <p className="text-2xl font-bold text-red-900">
+                      {cancelledOrders}
+                    </p>
                   </div>
                   {cancelledOrders > 0 && (
                     <Link
@@ -406,7 +446,8 @@ const AdminHomePage = () => {
                   )}
                 </div>
                 <p className="text-sm text-yellow-700 mt-1">
-                  {pendingOrders} orders are currently being processed and need attention
+                  {pendingOrders} orders are currently being processed and need
+                  attention
                 </p>
               </div>
 
@@ -440,7 +481,8 @@ const AdminHomePage = () => {
                   )}
                 </div>
                 <p className="text-sm text-red-700 mt-1">
-                  {lowStockProducts} products are running low on stock (less than 10 units)
+                  {lowStockProducts} products are running low on stock (less
+                  than 10 units)
                 </p>
               </div>
             </div>
@@ -463,50 +505,57 @@ const AdminHomePage = () => {
                 <div className="divide-y divide-gray-200">
                   {orders && orders.length > 0 ? (
                     [...orders]
-                      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                      .sort(
+                        (a, b) =>
+                          new Date(b.createdAt).getTime() -
+                          new Date(a.createdAt).getTime()
+                      )
                       .slice(0, 5)
                       .map((order: Order) => (
-                      <div key={order._id} className="px-6 py-4 hover:bg-gray-50">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <Link
-                              to={`/admin/orders/${order._id}`}
-                              className="text-sm font-medium text-gray-900 hover:text-blue-600"
-                            >
-                              Order #{order._id.slice(-6).toUpperCase()}
-                            </Link>
-                            <p className="text-sm text-gray-500">
-                              {order.user?.name || 'Unknown User'}
-                            </p>
-                            <p className="text-xs text-gray-400">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm font-medium text-gray-900">
-                              ${order.totalPrice.toFixed(2)}
-                            </p>
-                            <div className="space-y-1">
-                              <span
-                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
-                                  order.status
-                                )}`}
+                        <div
+                          key={order._id}
+                          className="px-6 py-4 hover:bg-gray-50"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <Link
+                                to={`/admin/orders/${order._id}`}
+                                className="text-sm font-medium text-gray-900 hover:text-blue-600"
                               >
-                                {order.status}
-                              </span>
-                              <br />
-                              <span
-                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
-                                  order.paymentStatus
-                                )}`}
-                              >
-                                {order.paymentStatus}
-                              </span>
+                                Order #{order._id.slice(-6).toUpperCase()}
+                              </Link>
+                              <p className="text-sm text-gray-500">
+                                {order.user?.name || "Unknown User"}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(order.createdAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-medium text-gray-900">
+                                ${order.totalPrice.toFixed(2)}
+                              </p>
+                              <div className="space-y-1">
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
+                                    order.status
+                                  )}`}
+                                >
+                                  {order.status}
+                                </span>
+                                <br />
+                                <span
+                                  className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
+                                    order.paymentStatus
+                                  )}`}
+                                >
+                                  {order.paymentStatus}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))
+                      ))
                   ) : (
                     <div className="px-6 py-4 text-center text-gray-500">
                       No orders found
@@ -532,31 +581,36 @@ const AdminHomePage = () => {
                 <div className="divide-y divide-gray-200">
                   {products && products.length > 0 ? (
                     products.slice(0, 5).map((product: Product) => (
-                      <div key={product._id} className="px-6 py-4 hover:bg-gray-50">
+                      <div
+                        key={product._id}
+                        className="px-6 py-4 hover:bg-gray-50"
+                      >
                         <div className="flex items-center justify-between">
                           <div>
                             <Link
                               to={`/admin/products/${product._id}`}
                               className="text-sm font-medium text-gray-900 hover:text-blue-600"
                             >
-                              {product.name || 'Unnamed Product'}
+                              {product.name || "Unnamed Product"}
                             </Link>
                             <p className="text-sm text-gray-500">
-                              {product.category || 'Uncategorized'}
+                              {product.category || "Uncategorized"}
                             </p>
                           </div>
                           <div className="text-right">
                             <p className="text-sm font-medium text-gray-900">
-                              ${product.price?.toFixed(2) || '0.00'}
+                              ${product.price?.toFixed(2) || "0.00"}
                             </p>
                             <p
                               className={`text-sm ${
-                                (product.countInStock || product.stock || 0) < 10 
-                                  ? "text-red-600" 
+                                (product.countInStock || product.stock || 0) <
+                                10
+                                  ? "text-red-600"
                                   : "text-green-600"
                               }`}
                             >
-                              Stock: {product.countInStock || product.stock || 0}
+                              Stock:{" "}
+                              {product.countInStock || product.stock || 0}
                             </p>
                           </div>
                         </div>
@@ -621,9 +675,14 @@ const AdminHomePage = () => {
               </div>
 
               <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg">
-                <h4 className="text-lg font-medium mb-2">Order Completion Rate</h4>
+                <h4 className="text-lg font-medium mb-2">
+                  Order Completion Rate
+                </h4>
                 <p className="text-3xl font-bold">
-                  {totalOrders > 0 ? ((deliveredOrders / totalOrders) * 100).toFixed(1) : 0}%
+                  {totalOrders > 0
+                    ? ((deliveredOrders / totalOrders) * 100).toFixed(1)
+                    : 0}
+                  %
                 </p>
                 <p className="text-purple-100 text-sm">
                   {deliveredOrders} of {totalOrders} delivered

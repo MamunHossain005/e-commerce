@@ -7,10 +7,9 @@ import html2canvas from "html2canvas";
 import type { RootState } from "../redux/store";
 import type { AppDispatch } from "../redux/store";
 
-
 const OrderDetailsPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams<{id: string }>(); // Get order ID from URL
+  const { id } = useParams<{ id: string }>(); // Get order ID from URL
   const dispatch = useDispatch<AppDispatch>();
   const { orderDetails, loading, error } = useSelector(
     (state: RootState) => state.orders
@@ -67,7 +66,10 @@ const OrderDetailsPage = () => {
       pdf.save(`invoice_${orderDetails._id}.pdf`);
     } catch (error) {
       console.error("Error generating invoice:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to generate invoice. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate invoice. Please try again.";
       alert(errorMessage);
     } finally {
       const input = invoiceRef.current;
@@ -149,10 +151,9 @@ const OrderDetailsPage = () => {
       }
     } catch (error) {
       console.error("Error cancelling order:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to cancel order";
-      setCancelError(
-        `${errorMessage}. Please contact customer support.`
-      );
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to cancel order";
+      setCancelError(`${errorMessage}. Please contact customer support.`);
     } finally {
       setIsCancellingOrder(false);
     }
@@ -176,7 +177,8 @@ const OrderDetailsPage = () => {
     // Optional: Check if order is within cancellation window (e.g., 24 hours)
     const orderDate = new Date(orderDetails.createdAt);
     const currentDate = new Date();
-    const hoursDifference = (currentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
+    const hoursDifference =
+      (currentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
     const withinCancellationWindow = hoursDifference <= 24; // 24 hours window
     return (
       isNotDelivered &&
@@ -190,7 +192,8 @@ const OrderDetailsPage = () => {
     if (!orderDetails) return null;
     const orderDate = new Date(orderDetails.createdAt);
     const currentDate = new Date();
-    const hoursDifference = (currentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
+    const hoursDifference =
+      (currentDate.getTime() - orderDate.getTime()) / (1000 * 60 * 60);
     const hoursRemaining = Math.max(0, 24 - hoursDifference);
     if (hoursRemaining === 0) return null;
     if (hoursRemaining < 1) {
@@ -205,9 +208,37 @@ const OrderDetailsPage = () => {
     setCancelReason("Customer requested cancellation");
   };
 
-  if (loading) return <p>Loading....</p>;
-  if (error) return <p>Error: {error}</p>;
-  if (!orderDetails) return <p>No Order details found</p>;
+  if (loading) {
+    return (
+      <div className="p-6 flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-lg">Loading Order Details...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Error loading products: {error}</p>
+        </div>
+      </div>
+    );
+  }
+  if (!orderDetails) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Error loading products: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   const calculateSubtotal = () => {
     return (
@@ -498,7 +529,9 @@ const OrderDetailsPage = () => {
                     </h3>
                     <p>
                       <span className="font-medium">Transaction Date:</span>{" "}
-                      {new Date(orderDetails.paidAt || Date.now()).toLocaleString()}
+                      {new Date(
+                        orderDetails.paidAt || Date.now()
+                      ).toLocaleString()}
                     </p>
                     <p>
                       <span className="font-medium">Status:</span>{" "}

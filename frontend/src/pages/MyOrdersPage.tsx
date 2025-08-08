@@ -9,8 +9,10 @@ import type { Order } from "../types/order"; // This should now use your updated
 const MyOrdersPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
-  const { orders, loading, error } = useSelector((state: RootState) => state.orders);
-  
+  const { orders, loading, error } = useSelector(
+    (state: RootState) => state.orders
+  );
+
   useEffect(() => {
     dispatch(fetchUserOrders());
   }, [dispatch]);
@@ -19,33 +21,53 @@ const MyOrdersPage = () => {
     navigate(`/order/${orderId}`);
   };
 
-  // 处理日期的辅助函数
   const formatDate = (date: Date | string): string => {
-    const d = typeof date === 'string' ? new Date(date) : date;
+    const d = typeof date === "string" ? new Date(date) : date;
     return `${d.toLocaleDateString()} ${d.toLocaleTimeString()}`;
   };
 
-  // 计算是否可以取消订单（前端逻辑）
   const calculateCanBeCancelled = (order: Order): boolean => {
-    // 不能取消已送达的订单
     if (order.isDelivered) return false;
-    
-    // 不能取消已取消的订单
-    if (order.isCancelled || order.status === 'Cancel' || order.paymentStatus === 'Cancelled') return false;
-    
-    // 没有交易ID且已支付的订单不能取消（需要退款）
+
+    if (
+      order.isCancelled ||
+      order.status === "Cancel" ||
+      order.paymentStatus === "Cancelled"
+    )
+      return false;
+
     if (!order.paymentDetails?.transactionId && order.isPaid) return false;
-    
-    // 检查24小时窗口
-    const createdAt = typeof order.createdAt === 'string' 
-      ? new Date(order.createdAt) 
-      : order.createdAt;
-    const hoursDiff = (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60);
+
+    const createdAt =
+      typeof order.createdAt === "string"
+        ? new Date(order.createdAt)
+        : order.createdAt;
+    const hoursDiff =
+      (new Date().getTime() - createdAt.getTime()) / (1000 * 60 * 60);
     return hoursDiff <= 24;
   };
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error}</p>;
+  if (loading) {
+    return (
+      <div className="p-6 flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-lg">Loading Orders...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Error loading orders: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6">
@@ -66,9 +88,9 @@ const MyOrdersPage = () => {
           <tbody>
             {orders.length > 0 ? (
               orders.map((order: Order) => {
-                // 计算是否可以取消
-                const canBeCancelled = order.canBeCancelled ?? calculateCanBeCancelled(order);
-                
+                const canBeCancelled =
+                  order.canBeCancelled ?? calculateCanBeCancelled(order);
+
                 return (
                   <tr
                     key={order._id}

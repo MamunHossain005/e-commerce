@@ -16,7 +16,9 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
 }) => {
   const navigate = useNavigate();
   const { user, guestId } = useSelector((state: RootState) => state.auth);
-  const { cart, loading, error } = useSelector((state: RootState) => state.cart);
+  const { cart, loading, error } = useSelector(
+    (state: RootState) => state.cart
+  );
 
   const handleCheckout = () => {
     toggleCartDrawer();
@@ -27,9 +29,28 @@ const CartDrawer: React.FC<CartDrawerProps> = ({
     }
   };
 
-  if(loading) return <div>Loading...</div>
-  if(error) return <div>Error : {error}</div>
-  
+  if (loading) {
+    return (
+      <div className="p-6 flex justify-center items-center min-h-screen">
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-lg">Loading Cart Products...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">Error loading cart products: {error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="fixed top-0 right-0 w-3/4 md:w-1/2 lg:[10rem] h-full bg-white shadow-lg transition-transform transform duration-300 flex flex-col z-50"

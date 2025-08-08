@@ -35,126 +35,126 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
       y: 0,
       transition: {
         duration: 0.8,
-        staggerChildren: 0.1
-      }
-    }
+        staggerChildren: 0.1,
+      },
+    },
   };
 
   const imageVariants: Variants = {
     hidden: { opacity: 0, scale: 0.9 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       scale: 1,
-      transition: { duration: 0.6, ease: "easeOut" }
+      transition: { duration: 0.6, ease: "easeOut" },
     },
     hover: {
       scale: 1.02,
-      transition: { duration: 0.3 }
-    }
+      transition: { duration: 0.3 },
+    },
   };
 
   const thumbnailVariants: Variants = {
-    inactive: { 
-      scale: 1, 
+    inactive: {
+      scale: 1,
       opacity: 0.7,
-      y: 0
+      y: 0,
     },
-    active: { 
-      scale: 1.05, 
+    active: {
+      scale: 1.05,
       opacity: 1,
       y: -2,
-      transition: { type: "spring", stiffness: 300, damping: 20 }
+      transition: { type: "spring", stiffness: 300, damping: 20 },
     },
     hover: {
       scale: 1.1,
       y: -3,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   const contentVariants: Variants = {
     hidden: { opacity: 0, x: 30 },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       x: 0,
-      transition: { duration: 0.6, ease: "easeOut" }
-    }
+      transition: { duration: 0.6, ease: "easeOut" },
+    },
   };
 
   const buttonVariants: Variants = {
-    initial: { 
-      opacity: 0, 
+    initial: {
+      opacity: 0,
       y: 15,
       scale: 1,
-      boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)" 
+      boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
     },
-    visible: { 
-      opacity: 1, 
+    visible: {
+      opacity: 1,
       y: 0,
       scale: 1,
       boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-      transition: { duration: 0.6, delay: 0.8 }
+      transition: { duration: 0.6, delay: 0.8 },
     },
-    hover: { 
+    hover: {
       scale: 1.02,
       boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
-      transition: { type: "spring", stiffness: 300 }
+      transition: { type: "spring", stiffness: 300 },
     },
-    tap: { 
+    tap: {
       scale: 0.98,
-      transition: { duration: 0.1 }
+      transition: { duration: 0.1 },
     },
     disabled: {
       scale: 1,
-      opacity: 0.6
-    }
+      opacity: 0.6,
+    },
   };
 
   const quantityVariants: Variants = {
     idle: { scale: 1 },
-    hover: { 
+    hover: {
       scale: 1.05,
       backgroundColor: "#f3f4f6",
-      transition: { duration: 0.2 }
+      transition: { duration: 0.2 },
     },
-    tap: { scale: 0.95 }
+    tap: { scale: 0.95 },
   };
 
   const colorVariants: Variants = {
-    unselected: { 
-      scale: 1, 
+    unselected: {
+      scale: 1,
       borderWidth: "1px",
-      boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+      boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
     },
-    selected: { 
-      scale: 1.15, 
+    selected: {
+      scale: 1.15,
       borderWidth: "4px",
       boxShadow: "0 4px 12px rgba(59, 130, 246, 0.3)",
-      transition: { type: "spring", stiffness: 400, damping: 15 }
+      transition: { type: "spring", stiffness: 400, damping: 15 },
     },
     hover: {
       scale: 1.1,
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   const sizeVariants: Variants = {
-    unselected: { 
+    unselected: {
       scale: 1,
       backgroundColor: "#ffffff",
-      color: "#374151"
+      color: "#374151",
     },
-    selected: { 
+    selected: {
       scale: 1.05,
       backgroundColor: "#000000",
       color: "#ffffff",
-      transition: { type: "spring", stiffness: 300 }
+      transition: { type: "spring", stiffness: 300 },
     },
     hover: {
       scale: 1.02,
       backgroundColor: "#f9fafb",
-      transition: { duration: 0.2 }
-    }
+      transition: { duration: 0.2 },
+    },
   };
 
   const loadingVariants: Variants = {
@@ -163,9 +163,9 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
       transition: {
         duration: 1,
         repeat: Infinity,
-        ease: "linear"
-      }
-    }
+        ease: "linear",
+      },
+    },
   };
 
   const handleQuantityChange = (action: "plus" | "minus") => {
@@ -190,7 +190,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
       return;
     }
     setIsButtonDisabled(true);
-    
+
     try {
       await dispatch(
         addToCart({
@@ -202,7 +202,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
           userId: user?._id,
         })
       ).unwrap();
-      
+
       toast.success("Product added to cart!", {
         duration: 1000,
       });
@@ -231,9 +231,14 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
   }, [selectedProduct]);
 
   // Calculate discount percentage
-  const discountPercentage = selectedProduct?.discountPrice && selectedProduct?.price 
-    ? Math.round(((selectedProduct.price - selectedProduct.discountPrice) / selectedProduct.price) * 100)
-    : 0;
+  const discountPercentage =
+    selectedProduct?.discountPrice && selectedProduct?.price
+      ? Math.round(
+          ((selectedProduct.price - selectedProduct.discountPrice) /
+            selectedProduct.price) *
+            100
+        )
+      : 0;
 
   // Get final price (discount price if available, otherwise regular price)
   const finalPrice = selectedProduct?.discountPrice || selectedProduct?.price;
@@ -241,33 +246,19 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
   if (loading) {
     return (
       <div className="p-6 flex justify-center items-center min-h-screen">
-        <motion.div
-          className="flex flex-col items-center"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="w-12 h-12 border-4 border-gray-300 border-t-blue-500 rounded-full"
-            variants={loadingVariants}
-            animate="animate"
-          />
-          <motion.p 
-            className="mt-4 text-gray-600"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            Loading product details...
-          </motion.p>
-        </motion.div>
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-black mx-auto mb-4"></div>
+            <p className="text-lg">Loading Product Details...</p>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <motion.div 
+      <motion.div
         className="p-6 text-center"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -281,7 +272,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
   // Add null check before rendering
   if (!selectedProduct) {
     return (
-      <motion.div 
+      <motion.div
         className="p-6 text-center"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -293,7 +284,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
   }
 
   return (
-    <motion.div 
+    <motion.div
       className="p-6"
       variants={pageVariants}
       initial="hidden"
@@ -302,7 +293,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
       <div className="max-w-6xl mx-auto bg-white p-8">
         <div className="flex flex-col md:flex-row">
           {/* Left Thumbnails */}
-          <motion.div 
+          <motion.div
             className="hidden md:flex flex-col space-y-4 mr-6"
             variants={contentVariants}
           >
@@ -325,10 +316,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
             ))}
           </motion.div>
           {/* Main Image */}
-          <motion.div 
-            className="md:w-1/2"
-            variants={contentVariants}
-          >
+          <motion.div className="md:w-1/2" variants={contentVariants}>
             <div className="mb-4 relative">
               {discountPercentage > 0 && (
                 <div className="absolute top-4 left-4 bg-red-500 text-white px-2 py-1 rounded-md text-sm font-medium z-10">
@@ -351,7 +339,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
             </div>
           </motion.div>
           {/* Mobile Thumbnails */}
-          <motion.div 
+          <motion.div
             className="md:hidden flex overflow-x-auto space-x-4 mb-4"
             variants={contentVariants}
           >
@@ -374,11 +362,8 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
             ))}
           </motion.div>
           {/* Right side */}
-          <motion.div 
-            className="md:w-1/2 md:ml-10"
-            variants={contentVariants}
-          >
-            <motion.h1 
+          <motion.div className="md:w-1/2 md:ml-10" variants={contentVariants}>
+            <motion.h1
               className="text-2xl md:text-3xl font-semibold mb-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -387,7 +372,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
               {selectedProduct.name}
             </motion.h1>
             {/* SKU */}
-            <motion.p 
+            <motion.p
               className="text-sm text-gray-500 mb-2"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -445,22 +430,23 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.35 }}
             >
-              <p className={`text-sm font-medium ${
-                selectedProduct.countInStock > 0 
-                  ? selectedProduct.countInStock < 10 
-                    ? "text-orange-600" 
-                    : "text-green-600"
-                  : "text-red-600"
-              }`}>
-                {selectedProduct.countInStock > 0 
-                  ? selectedProduct.countInStock < 10 
+              <p
+                className={`text-sm font-medium ${
+                  selectedProduct.countInStock > 0
+                    ? selectedProduct.countInStock < 10
+                      ? "text-orange-600"
+                      : "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {selectedProduct.countInStock > 0
+                  ? selectedProduct.countInStock < 10
                     ? `Only ${selectedProduct.countInStock} left in stock!`
                     : `In Stock (${selectedProduct.countInStock} available)`
-                  : "Out of Stock"
-                }
+                  : "Out of Stock"}
               </p>
             </motion.div>
-            <motion.p 
+            <motion.p
               className="text-gray-600 mb-4"
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
@@ -470,14 +456,17 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
             </motion.p>
             {/* Color Selection */}
             {selectedProduct.colors && selectedProduct.colors.length > 0 && (
-              <motion.div 
+              <motion.div
                 className="mb-4"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.5 }}
               >
                 <h3 className="text-gray-700 mb-2 font-medium">
-                  Color: {selectedColor && <span className="capitalize">{selectedColor}</span>}
+                  Color:{" "}
+                  {selectedColor && (
+                    <span className="capitalize">{selectedColor}</span>
+                  )}
                 </h3>
                 <div className="flex gap-3">
                   {selectedProduct.colors.map((color) => (
@@ -489,7 +478,9 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                         backgroundColor: color.toLowerCase(),
                       }}
                       variants={colorVariants}
-                      animate={selectedColor === color ? "selected" : "unselected"}
+                      animate={
+                        selectedColor === color ? "selected" : "unselected"
+                      }
                       whileHover="hover"
                       whileTap={{ scale: 0.9 }}
                       title={color}
@@ -504,7 +495,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
             )}
             {/* Size Selection */}
             {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
-              <motion.div 
+              <motion.div
                 className="mb-4"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -520,7 +511,9 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                       onClick={() => setSelectedSize(size)}
                       className="px-4 py-2 rounded border border-gray-300 min-w-[3rem]"
                       variants={sizeVariants}
-                      animate={selectedSize === size ? "selected" : "unselected"}
+                      animate={
+                        selectedSize === size ? "selected" : "unselected"
+                      }
                       whileHover={selectedSize === size ? {} : "hover"}
                       whileTap={{ scale: 0.95 }}
                     >
@@ -532,7 +525,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
             )}
             {/* Quantity */}
             {selectedProduct.countInStock > 0 && (
-              <motion.div 
+              <motion.div
                 className="mb-6"
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -550,7 +543,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                   >
                     -
                   </motion.button>
-                  <motion.span 
+                  <motion.span
                     className="text-lg font-medium min-w-[2rem] text-center"
                     key={quantity}
                     initial={{ scale: 1.2 }}
@@ -579,9 +572,21 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
               className="bg-black text-white py-3 px-6 rounded w-full mb-4 font-medium transition-colors hover:bg-gray-800 disabled:bg-gray-400 disabled:cursor-not-allowed"
               variants={buttonVariants}
               initial="initial"
-              animate={isButtonDisabled || selectedProduct.countInStock === 0 ? "disabled" : "visible"}
-              whileHover={isButtonDisabled || selectedProduct.countInStock === 0 ? {} : "hover"}
-              whileTap={isButtonDisabled || selectedProduct.countInStock === 0 ? {} : "tap"}
+              animate={
+                isButtonDisabled || selectedProduct.countInStock === 0
+                  ? "disabled"
+                  : "visible"
+              }
+              whileHover={
+                isButtonDisabled || selectedProduct.countInStock === 0
+                  ? {}
+                  : "hover"
+              }
+              whileTap={
+                isButtonDisabled || selectedProduct.countInStock === 0
+                  ? {}
+                  : "tap"
+              }
             >
               {selectedProduct.countInStock === 0 ? (
                 "Out of Stock"
@@ -594,7 +599,11 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                   <motion.div
                     className="w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2"
                     animate={{ rotate: 360 }}
-                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                    transition={{
+                      duration: 1,
+                      repeat: Infinity,
+                      ease: "linear",
+                    }}
                   />
                   Adding...
                 </motion.span>
@@ -603,7 +612,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
               )}
             </motion.button>
             {/* Product Details */}
-            <motion.div 
+            <motion.div
               className="mt-10 text-gray-700"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -628,7 +637,9 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                     transition={{ duration: 0.4, delay: 1.05 }}
                   >
                     <td className="py-2 font-medium">Category</td>
-                    <td className="py-2 capitalize">{selectedProduct.category}</td>
+                    <td className="py-2 capitalize">
+                      {selectedProduct.category}
+                    </td>
                   </motion.tr>
                   <motion.tr
                     initial={{ opacity: 0, x: -20 }}
@@ -636,7 +647,9 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                     transition={{ duration: 0.4, delay: 1.1 }}
                   >
                     <td className="py-2 font-medium">Collection</td>
-                    <td className="py-2 capitalize">{selectedProduct.collections}</td>
+                    <td className="py-2 capitalize">
+                      {selectedProduct.collections}
+                    </td>
                   </motion.tr>
                   {selectedProduct.material && (
                     <motion.tr
@@ -678,7 +691,7 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
                       <td className="py-2">
                         <div className="flex flex-wrap gap-1">
                           {selectedProduct.tags.map((tag, index) => (
-                            <span 
+                            <span
                               key={index}
                               className="bg-gray-100 px-2 py-1 rounded text-xs"
                             >
@@ -696,13 +709,13 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
         </div>
         {/* Similar Products */}
         {similarProducts && similarProducts.length > 0 && (
-          <motion.div 
+          <motion.div
             className="mt-20"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 1.2 }}
           >
-            <motion.h2 
+            <motion.h2
               className="text-2xl font-medium text-center mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
