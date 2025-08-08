@@ -157,17 +157,6 @@ const ProductDetails = ({ productId }: { productId?: string }) => {
     },
   };
 
-  const loadingVariants: Variants = {
-    animate: {
-      rotate: 360,
-      transition: {
-        duration: 1,
-        repeat: Infinity,
-        ease: "linear",
-      },
-    },
-  };
-
   const handleQuantityChange = (action: "plus" | "minus") => {
     if (action === "plus" && quantity < (selectedProduct?.countInStock || 0)) {
       setQuantity((prev) => prev + 1);
